@@ -15,6 +15,7 @@
         </li>
         <li class="nav-item">
           <a class="nav-link text-white" href="/QuanLyThietBiDienTu/src/features/user/views/UserProduct.vue">Sản phẩm</a>
+          <a class="nav-link text-white" href="#">Sản Phẩm</a>
         </li>
         <li class="nav-item">
           <a class="nav-link text-white" href="#">Đơn hàng</a>
