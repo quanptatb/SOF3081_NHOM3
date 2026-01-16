@@ -1,11 +1,27 @@
-<script setup></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div>
+    <nav class="navbar navbar-dark bg-dark px-4">
+      <a class="navbar-brand" href="#">SOF308</a>
+
+      <div>
+        <router-link to="/cart" class="btn btn-outline-light me-2">
+          Giỏ hàng
+        </router-link>
+        <router-link to="/checkout" class="btn btn-outline-warning">
+          Thanh toán
+        </router-link>
+      </div>
+    </nav>
+
+    <router-view />
+  </div>
 </template>
 
-<style scoped></style>
+<script setup>
+</script>
+
+<style>
+body {
+  background-color: #f5f5f5;
+}
+</style>
