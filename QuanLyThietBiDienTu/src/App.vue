@@ -1,11 +1,13 @@
-<script setup></script>
+<script setup>
+  import AdminLayout from './features/admin/layouts/AdminLayout.vue';
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <AdminLayout>
+    <template #default>
+      <slot></slot>
+    </template>
+  </AdminLayout>
 </template>
 
 <style scoped></style>
