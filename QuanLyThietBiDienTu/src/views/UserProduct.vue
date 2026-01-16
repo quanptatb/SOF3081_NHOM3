@@ -78,7 +78,7 @@
                     Thêm giỏ
                   </button>
                   <router-link
-                    :to="`/product/${p.id}`"
+                    :to="`/productuser/${p.id}`"
                     class="btn btn-fpt w-50"
                   >
                     Chi tiết
