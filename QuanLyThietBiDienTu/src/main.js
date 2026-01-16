@@ -1,6 +1,18 @@
 import { createApp } from 'vue'
+import { products } from '@/data/products'
+import { computed } from 'vue'
 import App from './App.vue'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+import router from './router'
 
-createApp(App).mount('#app')
+// CSS
+import './assets/main.css'
+import './assets/base.css'
+
+// Bootstrap
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+
+createApp(App)
+  .use(router)
+  .mount('#app')
+
