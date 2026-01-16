@@ -14,7 +14,10 @@
           <a class="nav-link text-white" href="#">Quản lý thiết bị</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white" href="#">Quản lý đơn hàng</a>
+          <a class="nav-link text-white" href="/QuanLyThietBiDienTu/src/features/user/views/UserProduct.vue">Sản phẩm</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#">Đơn hàng</a>
         </li>
       </ul>
     </aside>
