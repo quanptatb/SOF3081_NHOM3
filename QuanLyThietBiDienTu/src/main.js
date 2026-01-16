@@ -9,7 +9,7 @@ import './assets/base.css'
 
 // Bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 createApp(App)
   .use(router)
