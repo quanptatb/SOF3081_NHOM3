@@ -5,7 +5,6 @@ import App from './App.vue'
 import router from './router'
 
 // CSS
-import './assets/main.css'
 import './assets/base.css'
 
 // Bootstrap
@@ -15,4 +14,3 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 createApp(App)
   .use(router)
   .mount('#app')
-
