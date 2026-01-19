@@ -3,6 +3,7 @@ import { products } from '@/data/products'
 import { computed } from 'vue'
 import App from './App.vue'
 import router from './router'
+import 'bootstrap'
 
 // CSS
 import './assets/base.css'

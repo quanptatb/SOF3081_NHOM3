@@ -18,7 +18,11 @@
         </li>
 
         <li class="nav-item">
-          <router-link to="/admin/products" class="nav-link" active-class="active">
+          <router-link
+            to="/admin/products"
+            class="nav-link"
+            active-class="active"
+          >
             💻 Thiết bị
           </router-link>
         </li>
@@ -26,15 +30,11 @@
         <hr class="text-secondary" />
 
         <li class="nav-item">
-          <router-link to="/" class="nav-link">
-            🛒 Sản phẩm
-          </router-link>
+          <router-link to="/" class="nav-link"> 🛒 Sản phẩm </router-link>
         </li>
 
         <li class="nav-item">
-          <router-link to="/cart" class="nav-link">
-            🧺 Giỏ hàng
-          </router-link>
+          <router-link to="/cart" class="nav-link"> 🧺 Giỏ hàng </router-link>
         </li>
 
         <li class="nav-item">
@@ -48,9 +48,13 @@
     <!-- Main -->
     <div class="flex-fill d-flex flex-column">
       <!-- Header -->
-      <header class="bg-white border-bottom px-4 py-3 d-flex justify-content-between align-items-center shadow-sm">
-        <strong>SD21305 - NoName</strong>
-        <button class="btn btn-sm btn-danger">Đăng xuất</button>
+      <header
+        class="bg-white border-bottom px-4 py-3 d-flex justify-content-between align-items-center shadow-sm"
+      >
+        <strong>SD21305 - {{ currentUser?.name || "Admin" }}</strong>
+        <button @click="handleLogout" class="btn btn-sm btn-danger">
+          Đăng xuất
+        </button>
       </header>
 
       <!-- Content -->
@@ -61,7 +65,23 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const currentUser = ref(null);
+
+onMounted(() => {
+  const stored = localStorage.getItem("currentUser");
+  if (stored) currentUser.value = JSON.parse(stored);
+});
+
+const handleLogout = () => {
+  localStorage.removeItem("currentUser");
+  router.push("/login");
+};
+</script>
 
 <style scoped>
 .sidebar {
