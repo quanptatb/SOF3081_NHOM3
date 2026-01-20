@@ -51,7 +51,7 @@
     </main>
 
     <footer class="bg-white text-center py-3 border-top mt-auto">
-      <small class="text-muted">© 2024 SD21305 - Dự án mẫu VueJS</small>
+      <small class="text-muted">© 2026 SD21305 - Quản lý thiết bị điện tử</small>
     </footer>
   </div>
 </template>
