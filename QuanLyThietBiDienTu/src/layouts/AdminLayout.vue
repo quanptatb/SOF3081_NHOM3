@@ -32,7 +32,11 @@
           <li class="nav-item mt-3">
             <span class="text-uppercase text-white-50 fs-xs px-3 fw-bold mb-1 d-block">Lối tắt</span>
           </li>
-
+          <li class="nav-item">
+            <router-link to="/admin/Orders" class="nav-link d-flex align-items-center gap-2" active-class="active">
+              <span>📦</span> Order
+            </router-link>
+          </li>
           <li class="nav-item">
             <router-link to="/" class="nav-link d-flex align-items-center gap-2">
               <span>🛍️</span> Xem Shop
