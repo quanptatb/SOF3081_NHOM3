@@ -12,6 +12,7 @@ import Checkout from "../views/Checkout.vue";
 import UserAdmin from "@/views/admin/UserAdmin.vue";
 import Login from "@/views/auth/Login.vue";
 import Register from "@/views/auth/Register.vue";
+import OrderAdmin from "@/views/admin/OrderAdmin.vue";
 
 const routes = [
   // --- Auth Routes (Không dùng AdminLayout) ---
@@ -39,6 +40,11 @@ const routes = [
     path: '/admin/users', // Route mới cho User
     component: UserAdmin,
   },
+    {
+    path: '/admin/Orders',
+    component: OrderAdmin,
+  },
+
 
   // --- User Routes ---
   {
