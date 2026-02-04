@@ -99,9 +99,9 @@
             <div class="form-group" v-if="formData.payment === 'BANK'">
               <div class="bank-info">
                 <h4>Thông tin chuyển khoản:</h4>
-                <p><strong>Ngân hàng:</strong> Vietcombank</p>
-                <p><strong>Số tài khoản:</strong> 0123456789</p>
-                <p><strong>Chủ tài khoản:</strong> Shop Điện Tử</p>
+                <p><strong>Ngân hàng:</strong> Vietinbank</p>
+                <p><strong>Số tài khoản:</strong> 0354006080</p>
+                <p><strong>Chủ tài khoản:</strong> Phạm Trần Anh Quân</p>
                 <p><strong>Nội dung:</strong> [Mã đơn hàng] - [Họ tên]</p>
               </div>
             </div>
