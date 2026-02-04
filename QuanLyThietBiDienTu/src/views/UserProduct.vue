@@ -1,217 +1,630 @@
 <template>
-  <!-- NAVBAR
-  <nav class="navbar fpt-navbar py-3">
-    <div class="container d-flex align-items-center">
-      <h4 class="mb-0 fw-bold text-white">Linh kiện điện tử</h4> -->
-
-      <!-- SEARCH BAR -->
-<div class="container my-4">
-  <div class="search-bar">
-    <div class="input-group">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Tìm kiếm sản phẩm..."
-        v-model="search"
-      />
-      <button class="btn btn-outline-fpt">
-        Tìm
-      </button>
-    </div>
-  </div>
-</div>
-
-
-  <!-- CONTENT -->
-  <div class="container my-4">
-    <div class="row">
-      <!-- FILTER -->
-      <div class="col-md-3">
-        <div class="card filter-card">
-          <div class="card-header">Bộ lọc</div>
-          <div class="card-body">
-            <label class="form-label">Danh mục</label>
-            <select class="form-select mb-3" v-model="category">
-              <option>Tất cả</option>
-              <option>CPU</option>
-              <option>RAM</option>
-              <option>GPU</option>
-              <option>SSD</option>
-              <option>HDD</option>
-            </select>
-
-            <label class="form-label">Khoảng giá</label>
-            <select class="form-select" v-model="priceRange">
-              <option>Tất cả</option>
-              <option>Dưới 2 triệu</option>
-              <option>2 – 5 triệu</option>
-              <option>Trên 5 triệu</option>
-            </select>
-          </div>
+  <div class="product-page">
+    <!-- Search Bar -->
+    <section class="search-section">
+      <div class="search-container">
+        <div class="search-wrapper">
+          <i class="bi bi-search search-icon" aria-hidden="true"></i>
+          <input type="text" class="search-input" placeholder="Tìm kiếm sản phẩm theo tên..." v-model="searchQuery"
+            @input="handleSearchInput" aria-label="Tìm kiếm sản phẩm" />
+          <button v-if="searchQuery" class="search-clear" @click="clearSearch" aria-label="Xóa tìm kiếm">
+            <i class="bi bi-x-circle" aria-hidden="true"></i>
+          </button>
         </div>
       </div>
+    </section>
 
-      <!-- PRODUCTS -->
-      <div class="col-md-9">
-        <div class="row g-4">
-          <div
-            v-for="p in paginatedProducts"
-            :key="p.id"
-            class="col-xl-4 col-lg-4 col-md-6 col-sm-12"
-          >
-            <div class="card product-card h-100">
-              <div class="product-img-wrap">
-                <img :src="p.image" class="product-img" />
+    <!-- Main Content -->
+    <section class="content-section">
+      <div class="content-container">
+        <div class="layout-grid">
+          <!-- Sidebar Filter -->
+          <aside class="filter-sidebar" role="complementary">
+            <ProductFilter v-model:category="category" v-model:priceRange="priceRange" />
+          </aside>
+
+          <!-- Products Area -->
+          <main class="products-main" role="main">
+            <!-- Controls Bar -->
+            <div class="controls-bar">
+              <div class="results-info">
+                <span class="results-count" v-if="!isLoading">
+                  {{ resultsSummary }}
+                </span>
               </div>
-
-              <div class="card-body text-center">
-                <h6 class="fw-bold">{{ p.name }}</h6>
-                <small class="text-muted">{{ p.category }}</small>
-                <p class="text-primary fw-bold mt-2">
-                  {{ formatPrice(p.price) }}
-                </p>
-              </div>
-
-              <div class="card-footer bg-white border-0">
-                <div class="d-flex gap-2">
-                  <button class="btn btn-outline-fpt w-50">
-                    Thêm giỏ
-                  </button>
-                  <router-link
-                    :to="`/productuser/${p.id}`"
-                    class="btn btn-fpt w-50"
-                  >
-                    Chi tiết
-                  </router-link>
-                </div>
+              <div class="controls-actions">
+                <select v-model="sortBy" class="sort-select" aria-label="Sắp xếp sản phẩm">
+                  <option value="default">Mặc định</option>
+                  <option value="name-asc">Tên: A-Z</option>
+                  <option value="name-desc">Tên: Z-A</option>
+                  <option value="price-asc">Giá: Thấp đến cao</option>
+                  <option value="price-desc">Giá: Cao đến thấp</option>
+                </select>
               </div>
             </div>
-          </div>
 
-          <!-- KHÔNG CÓ SẢN PHẨM -->
-          <div
-            v-if="filteredProducts.length === 0"
-            class="text-center text-muted py-5"
-          >
-            Không có sản phẩm phù hợp
-          </div>
+            <!-- Loading State -->
+            <div v-if="isLoading" class="loading-state">
+              <div class="spinner"></div>
+              <p>Đang tải sản phẩm...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else-if="filteredProducts.length === 0" class="empty-state">
+              <div class="empty-icon">
+                <i class="bi bi-inbox" aria-hidden="true"></i>
+              </div>
+              <h3 class="empty-title">Không tìm thấy sản phẩm</h3>
+              <p class="empty-description">
+                {{ emptyStateMessage }}
+              </p>
+              <button v-if="hasActiveFilters" class="btn-reset-filters" @click="resetFilters">
+                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                Xóa bộ lọc
+              </button>
+            </div>
+
+            <!-- Products Grid -->
+            <div v-else class="products-grid">
+              <div v-for="product in paginatedProducts" :key="product.id" class="product-item">
+                <ProductCard :product="product" @add-to-cart="handleAddToCart" />
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="totalPages > 1 && !isLoading" class="pagination-wrapper">
+              <AppPagination :current-page="currentPage" :total-pages="totalPages"
+                @update:currentPage="handlePageChange" />
+            </div>
+          </main>
         </div>
-
-        <!-- PAGINATION -->
-        <nav class="mt-4" v-if="totalPages > 1">
-          <ul class="pagination justify-content-center">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }">
-              <button
-                class="page-link"
-                @click="currentPage--"
-                :disabled="currentPage === 1"
-              >
-                «
-              </button>
-            </li>
-
-            <li
-              v-for="page in totalPages"
-              :key="page"
-              class="page-item"
-              :class="{ active: currentPage === page }"
-            >
-              <button
-                class="page-link"
-                @click="currentPage = page"
-              >
-                {{ page }}
-              </button>
-            </li>
-
-            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-              <button
-                class="page-link"
-                @click="currentPage++"
-                :disabled="currentPage === totalPages"
-              >
-                »
-              </button>
-            </li>
-          </ul>
-        </nav>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { products as sourceProducts } from '../data/products'
 
-// STATE
-const search = ref('')
+// Import Components
+import ProductCard from '../components/ProductCard.vue'
+import ProductFilter from '../components/ProductFilter.vue'
+import AppPagination from '../components/AppPagination.vue'
+
+/**
+ * State Management
+ */
+const searchQuery = ref('')
+const debouncedSearch = ref('')
 const category = ref('Tất cả')
 const priceRange = ref('Tất cả')
-
-// PAGINATION
+const sortBy = ref('default')
 const currentPage = ref(1)
-const pageSize = 10
+const isLoading = ref(true)
 
-// FORMAT PRICE
-const formatPrice = (price: number): string => {
-  return price.toLocaleString('vi-VN') + ' đ'
+/**
+ * Configuration
+ */
+const PAGE_SIZE = 9
+const DEBOUNCE_DELAY = 300
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
+/**
+ * Products Data
+ */
+const products = ref(sourceProducts)
+
+/**
+ * Debounced Search Handler
+ */
+const handleSearchInput = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  searchTimeout = setTimeout(() => {
+    debouncedSearch.value = searchQuery.value
+  }, DEBOUNCE_DELAY)
 }
 
-// PRODUCTS (20 SP)
-const products = ref([
-  { id: 1, name: 'CPU Intel i5', category: 'CPU', price: 4500000, image: '/src/assets/inteli5.png' },
-  { id: 2, name: 'CPU Intel i7', category: 'CPU', price: 6500000, image: '/src/assets/inteli7.png' },
-  { id: 3, name: 'CPU Ryzen 5', category: 'CPU', price: 4200000, image: '/src/assets/ryzen5.png' },
-  { id: 4, name: 'CPU Ryzen 7', category: 'CPU', price: 7200000, image: '/src/assets/ryzen7.png' },
+/**
+ * Clear Search
+ */
+const clearSearch = () => {
+  searchQuery.value = ''
+  debouncedSearch.value = ''
+}
 
-  { id: 5, name: 'RAM Corsair 8GB', category: 'RAM', price: 800000, image: '/src/assets/corsair8.png' },
-  { id: 6, name: 'RAM Corsair 16GB', category: 'RAM', price: 1200000, image: '/src/assets/corsair16.png' },
-  { id: 7, name: 'RAM Kingston 8GB', category: 'RAM', price: 750000, image: '/src/assets/kingston8.png' },
-  { id: 8, name: 'RAM Kingston 16GB', category: 'RAM', price: 1300000, image: '/src/assets/kingston16.png' },
+/**
+ * Price Range Matching Logic
+ */
+const matchesPriceRange = (price: number, range: string): boolean => {
+  switch (range) {
+    case 'Dưới 2 triệu':
+      return price < 2000000
+    case '2 – 5 triệu':
+      return price >= 2000000 && price <= 5000000
+    case 'Trên 5 triệu':
+      return price > 5000000
+    default:
+      return true
+  }
+}
 
-  { id: 9, name: 'RTX 3050', category: 'GPU', price: 6200000, image: '/src/assets/rtx3050.png' },
-  { id: 10, name: 'RTX 3060', category: 'GPU', price: 7800000, image: '/src/assets/rtx3060.png' },
-  { id: 11, name: 'RTX 4060', category: 'GPU', price: 9500000, image: '/src/assets/rtx4060.png' },
-  { id: 12, name: 'GTX 1660', category: 'GPU', price: 4800000, image: '/src/assets/gtx1660.png' },
-
-  { id: 13, name: 'SSD Transcend 512GB', category: 'SSD', price: 1400000, image: '/src/assets/trans512.png' },
-  { id: 14, name: 'SSD Kingston 1TB', category: 'SSD', price: 2200000, image: '/src/assets/kingston1tb.png' },
-  { id: 15, name: 'HDD WD 1TB', category: 'HDD', price: 900000, image: '/src/assets/wd1tb.png' },
-  { id: 16, name: 'HDD Seagate 2TB', category: 'HDD', price: 1600000, image: '/src/assets/seagate2tb.png' },
-
-  { id: 17, name: 'SSD Samsung 980 500GB', category: 'SSD', price: 1800000, image: '/src/assets/samsung980.png' },
-  { id: 18, name: 'SSD Samsung 970 EVO 1TB', category: 'SSD', price: 2900000, image: '/src/assets/samsung970.png' },
-  { id: 19, name: 'HDD Toshiba 1TB', category: 'HDD', price: 850000, image: '/src/assets/toshiba1tb.png' },
-  { id: 20, name: 'HDD Seagate 4TB', category: 'HDD', price: 2900000, image: '/src/assets/seagate4tb.png' },
-])
-
-// FILTER + SEARCH
+/**
+ * Filtered Products
+ */
 const filteredProducts = computed(() => {
-  return products.value.filter(p => {
-    const matchName = p.name.toLowerCase().includes(search.value.toLowerCase())
-    const matchCategory = category.value === 'Tất cả' || p.category === category.value
-    const matchPrice =
-      priceRange.value === 'Tất cả' ||
-      (priceRange.value === 'Dưới 2 triệu' && p.price < 2000000) ||
-      (priceRange.value === '2 – 5 triệu' && p.price >= 2000000 && p.price <= 5000000) ||
-      (priceRange.value === 'Trên 5 triệu' && p.price > 5000000)
+  let filtered = products.value.filter((product) => {
+    const matchName = product.name
+      .toLowerCase()
+      .includes(debouncedSearch.value.toLowerCase())
+    const matchCategory =
+      category.value === 'Tất cả' || product.category === category.value
+    const matchPrice = matchesPriceRange(product.price, priceRange.value)
 
     return matchName && matchCategory && matchPrice
   })
+
+  // Apply sorting
+  if (sortBy.value !== 'default') {
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortBy.value) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name)
+        case 'name-desc':
+          return b.name.localeCompare(a.name)
+        case 'price-asc':
+          return a.price - b.price
+        case 'price-desc':
+          return b.price - a.price
+        default:
+          return 0
+      }
+    })
+  }
+
+  return filtered
 })
 
-// PAGINATION COMPUTED
+/**
+ * Pagination
+ */
 const totalPages = computed(() =>
-  Math.ceil(filteredProducts.value.length / pageSize)
+  Math.ceil(filteredProducts.value.length / PAGE_SIZE)
 )
 
 const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredProducts.value.slice(start, start + pageSize)
+  const start = (currentPage.value - 1) * PAGE_SIZE
+  return filteredProducts.value.slice(start, start + PAGE_SIZE)
 })
 
-// RESET PAGE WHEN FILTER CHANGE
-watch([search, category, priceRange], () => {
+/**
+ * UI Helper Computed Properties
+ */
+const hasActiveFilters = computed(() => {
+  return (
+    debouncedSearch.value !== '' ||
+    category.value !== 'Tất cả' ||
+    priceRange.value !== 'Tất cả' ||
+    sortBy.value !== 'default'
+  )
+})
+
+const resultsSummary = computed(() => {
+  const count = filteredProducts.value.length
+  if (count === 0) return 'Không có sản phẩm'
+  if (count === 1) return '1 sản phẩm'
+  return `${count} sản phẩm`
+})
+
+const emptyStateMessage = computed(() => {
+  if (debouncedSearch.value) {
+    return `Không tìm thấy sản phẩm nào với từ khóa "${debouncedSearch.value}"`
+  }
+  if (category.value !== 'Tất cả' || priceRange.value !== 'Tất cả') {
+    return 'Không có sản phẩm nào phù hợp với bộ lọc của bạn'
+  }
+  return 'Không có sản phẩm nào'
+})
+
+/**
+ * Event Handlers
+ */
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  // Scroll to top of products
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+}
+
+const resetFilters = () => {
+  searchQuery.value = ''
+  debouncedSearch.value = ''
+  category.value = 'Tất cả'
+  priceRange.value = 'Tất cả'
+  sortBy.value = 'default'
+  currentPage.value = 1
+}
+
+const handleAddToCart = (product: any) => {
+  try {
+    // Get current cart from localStorage
+    const cartData = localStorage.getItem('cart')
+    const cart = cartData ? JSON.parse(cartData) : []
+
+    // Check if product already in cart
+    const existingIndex = cart.findIndex((item: any) => item.id === product.id)
+
+    if (existingIndex >= 0) {
+      // Increase quantity
+      cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + 1
+    } else {
+      // Add new product
+      cart.push({
+        ...product,
+        quantity: 1
+      })
+    }
+
+    // Save to localStorage
+    localStorage.setItem('cart', JSON.stringify(cart))
+
+    // Trigger storage event for other components
+    window.dispatchEvent(new Event('storage'))
+
+    console.log('Đã thêm vào giỏ hàng:', product.name)
+  } catch (error) {
+    console.error('Lỗi khi thêm vào giỏ hàng:', error)
+  }
+}
+
+/**
+ * Watchers
+ */
+watch([debouncedSearch, category, priceRange, sortBy], () => {
   currentPage.value = 1
 })
+
+/**
+ * Lifecycle
+ */
+onMounted(() => {
+  // Simulate loading
+  setTimeout(() => {
+    isLoading.value = false
+  }, 500)
+})
 </script>
+
+<style scoped>
+/* CSS Custom Properties */
+:root {
+  --primary-color: #0d6efd;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  --border-color: #dee2e6;
+  --transition-speed: 0.3s;
+  --border-radius: 8px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Layout */
+.product-page {
+  min-height: 100vh;
+  background: var(--light-color);
+}
+
+/* Search Section */
+.search-section {
+  background: white;
+  padding: 1.5rem 0;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.search-wrapper {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--secondary-color);
+  font-size: 1.125rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.875rem 3rem 0.875rem 3rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: all var(--transition-speed) ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.search-clear {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--secondary-color);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color var(--transition-speed) ease;
+}
+
+.search-clear:hover {
+  color: var(--danger-color);
+}
+
+/* Content Section */
+.content-section {
+  padding: 0 0 3rem;
+}
+
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 2rem;
+}
+
+/* Filter Sidebar */
+.filter-sidebar {
+  position: sticky;
+  top: 1rem;
+  height: fit-content;
+}
+
+/* Products Main */
+.products-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Controls Bar */
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.results-info {
+  display: flex;
+  align-items: center;
+}
+
+.results-count {
+  font-weight: 600;
+  color: var(--dark-color);
+}
+
+.controls-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.sort-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color var(--transition-speed) ease;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: var(--secondary-color);
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--dark-color);
+  margin-bottom: 0.5rem;
+}
+
+.empty-description {
+  color: var(--secondary-color);
+  margin-bottom: 1.5rem;
+}
+
+.btn-reset-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.btn-reset-filters:hover {
+  background: #0a58ca;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Products Grid */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.product-item {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pagination */
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .layout-grid {
+    grid-template-columns: 200px 1fr;
+    gap: 1.5rem;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-sidebar {
+    position: static;
+  }
+
+  .controls-bar {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .controls-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sort-select {
+    width: 100%;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .search-section {
+    padding: 1rem 0;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
