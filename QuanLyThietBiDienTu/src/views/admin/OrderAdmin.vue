@@ -1,101 +1,180 @@
 <template>
-  <div class="p-4">
-    <h1 class="text-2xl font-bold mb-6">Quản Lý Đơn Hàng</h1>
-
-    <div class="overflow-x-auto shadow-md sm:rounded-lg">
-      <table class="w-full text-sm text-left text-gray-500">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3">Mã Đơn</th>
-            <th scope="col" class="px-6 py-3">Khách Hàng</th>
-            <th scope="col" class="px-6 py-3">Tổng Tiền</th>
-            <th scope="col" class="px-6 py-3">Ngày Đặt</th>
-            <th scope="col" class="px-6 py-3">Trạng Thái</th>
-            <th scope="col" class="px-6 py-3">Hành Động</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="order in orders" :key="order.id" class="bg-white border-b hover:bg-gray-50">
-            <td class="px-6 py-4 font-medium text-gray-900">#{{ order.id }}</td>
-            <td class="px-6 py-4">{{ order.customerName }}</td>
-            <td class="px-6 py-4">{{ formatCurrency(order.total) }}</td>
-            <td class="px-6 py-4">{{ formatDate(order.date) }}</td>
-            <td class="px-6 py-4">
-              <span :class="getStatusColor(order.status)" class="px-2 py-1 rounded text-white text-xs">
-                {{ order.status }}
-              </span>
-            </td>
-            <td class="px-6 py-4">
-              <button 
-                v-if="order.status === 'Pending'"
-                @click="confirmOrder(order.id)"
-                class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-1 px-3 rounded text-xs transition duration-300"
-              >
-                Xác nhận
-              </button>
-              <span v-else class="text-green-600 font-semibold text-xs">Đã xử lý</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <div class="p-4 bg-gray-50 min-h-screen">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">Quản Lý Đơn Hàng</h1>
+        <p class="text-sm text-gray-500">Theo dõi và cập nhật trạng thái đơn hàng</p>
+      </div>
       
-      <div v-if="orders.length === 0" class="text-center py-8">
-        Chưa có đơn hàng nào cần xử lý.
+      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <div>
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Tìm mã đơn, tên, sđt..." 
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none w-full sm:w-64"
+          >
+        </div>
+
+        <select 
+          v-model="filterStatus" 
+          class="border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+        >
+          <option value="">Tất cả trạng thái</option>
+          <option value="Pending">Chờ xử lý</option>
+          <option value="Confirmed">Đã xác nhận</option>
+          <option value="Shipping">Đang vận chuyển</option>
+          <option value="Delivered">Đã giao hàng</option>
+          <option value="Cancelled">Đã hủy</option>
+        </select>
+        
+        <button @click="resetData" class="text-xs text-red-500 underline whitespace-nowrap self-center hover:text-red-700">
+          Reset dữ liệu
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-gray-500">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-100 border-b">
+            <tr>
+              <th scope="col" class="px-6 py-4 font-bold">Mã Đơn</th>
+              <th scope="col" class="px-6 py-4">Khách Hàng</th>
+              <th scope="col" class="px-6 py-4">Tổng Tiền</th>
+              <th scope="col" class="px-6 py-4">Ngày Đặt</th>
+              <th scope="col" class="px-6 py-4 text-center">Trạng Thái (Sửa)</th>
+              <th scope="col" class="px-6 py-4 text-right">Chi tiết</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr v-for="order in filteredOrders" :key="order.id" class="hover:bg-blue-50 transition-colors duration-150">
+              <td class="px-6 py-4 font-bold text-gray-900">
+                #{{ order.id }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-900">{{ order.customerName }}</div>
+                <div class="text-xs text-gray-500">{{ order.phone }}</div>
+                <div class="text-xs text-gray-400 truncate w-40">{{ order.address }}</div>
+              </td>
+              <td class="px-6 py-4 font-bold text-red-600">
+                {{ formatCurrency(order.total) }}
+              </td>
+              <td class="px-6 py-4 text-gray-500">
+                {{ formatDate(order.date) }}
+              </td>
+              <td class="px-6 py-4 text-center">
+                <select 
+                  v-model="order.status" 
+                  @change="updateOrderStatus(order)"
+                  :class="getStatusClass(order.status)"
+                  class="text-xs font-semibold py-1 px-2 rounded border-0 cursor-pointer focus:ring-2 focus:ring-offset-1 transition-all shadow-sm"
+                >
+                  <option value="Pending" class="bg-white text-gray-800">⏳ Chờ xử lý</option>
+                  <option value="Confirmed" class="bg-white text-gray-800">✅ Đã xác nhận</option>
+                  <option value="Shipping" class="bg-white text-gray-800">🚚 Đang vận chuyển</option>
+                  <option value="Delivered" class="bg-white text-gray-800">🎉 Đã giao hàng</option>
+                  <option value="Cancelled" class="bg-white text-gray-800">❌ Đã hủy</option>
+                </select>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <button 
+                  @click="deleteOrder(order.id)"
+                  class="text-gray-400 hover:text-red-600 transition-colors p-2"
+                  title="Xóa đơn hàng"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-if="filteredOrders.length === 0" class="text-center py-12">
+        <div class="text-4xl mb-2">🔍</div>
+        <p class="text-gray-500">Không tìm thấy đơn hàng nào phù hợp.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
-// 1. Giả lập dữ liệu (Thực tế bạn sẽ gọi API ở đây)
-const orders = ref([
-  { id: 'DH001', customerName: 'Nguyễn Văn A', total: 500000, date: '2023-10-25', status: 'Pending' },
-  { id: 'DH002', customerName: 'Trần Thị B', total: 1200000, date: '2023-10-24', status: 'Confirmed' },
-  { id: 'DH003', customerName: 'Lê Văn C', total: 750000, date: '2023-10-26', status: 'Pending' },
-]);
+// --- DATA ---
+const orders = ref([]);
+const searchQuery = ref('');
+const filterStatus = ref(''); 
 
-// 2. Hàm xử lý xác nhận đơn hàng
-const confirmOrder = (orderId) => {
-  // Tìm đơn hàng trong mảng
-  const order = orders.value.find(o => o.id === orderId);
-  
-  if (order) {
-    if (confirm(`Bạn có chắc muốn xác nhận đơn hàng #${orderId}?`)) {
-      // Cập nhật trạng thái (Trong thực tế, chỗ này bạn sẽ gọi API PUT/PATCH)
-      order.status = 'Confirmed';
-      
-      // TODO: Gọi API cập nhật backend tại đây
-      // await axios.put(`/api/orders/${orderId}`, { status: 'Confirmed' });
-      
-      alert('Đã xác nhận đơn hàng thành công!');
+// --- COMPUTED: Xử lý tìm kiếm và lọc ---
+const filteredOrders = computed(() => {
+  return orders.value.filter(order => {
+    // 1. Lọc theo trạng thái
+    if (filterStatus.value && order.status !== filterStatus.value) {
+      return false;
     }
+
+    // 2. Tìm kiếm theo từ khóa
+    const query = searchQuery.value.toLowerCase();
+    const matchesSearch = 
+      order.id.toString().toLowerCase().includes(query) ||
+      order.customerName.toLowerCase().includes(query) ||
+      order.phone.includes(query);
+
+    return matchesSearch;
+  });
+});
+
+// --- METHODS ---
+const loadOrders = () => {
+  const data = localStorage.getItem('site_orders');
+  orders.value = data ? JSON.parse(data) : [];
+};
+
+const updateOrderStatus = (order) => {
+  saveData();
+};
+
+const deleteOrder = (id) => {
+  if(confirm('Bạn có chắc muốn xóa vĩnh viễn đơn hàng này?')) {
+    orders.value = orders.value.filter(o => o.id !== id);
+    saveData();
   }
 };
 
-// Helper: Format tiền tệ
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+const saveData = () => {
+  localStorage.setItem('site_orders', JSON.stringify(orders.value));
 };
 
-// Helper: Format ngày tháng
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('vi-VN');
-};
-
-// Helper: Màu sắc trạng thái
-const getStatusColor = (status) => {
-  switch(status) {
-    case 'Pending': return 'bg-yellow-500';
-    case 'Confirmed': return 'bg-green-500';
-    case 'Cancelled': return 'bg-red-500';
-    default: return 'bg-gray-500';
+const resetData = () => {
+  if(confirm('Xóa sạch dữ liệu cũ để test lại?')) {
+    localStorage.removeItem('site_orders');
+    orders.value = [];
   }
 };
 
-// Fetch data khi component được load
+// --- HELPERS ---
+const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+
+const formatDate = (dateStr) => {
+  try {
+    return new Date(dateStr).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit' });
+  } catch { return dateStr; }
+};
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case 'Pending': return 'bg-yellow-100 text-yellow-700 ring-yellow-200';
+    case 'Confirmed': return 'bg-blue-100 text-blue-700 ring-blue-200';
+    case 'Shipping': return 'bg-purple-100 text-purple-700 ring-purple-200';
+    case 'Delivered': return 'bg-green-100 text-green-700 ring-green-200';
+    case 'Cancelled': return 'bg-gray-100 text-gray-500 ring-gray-200 line-through';
+    default: return 'bg-white border-gray-300';
+  }
+};
+
 onMounted(() => {
-  // fetchOrders(); // Gọi hàm lấy dữ liệu từ API
+  loadOrders();
 });
 </script>
