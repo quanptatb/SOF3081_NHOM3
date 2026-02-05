@@ -105,6 +105,11 @@
               <i class="bi bi-credit-card" aria-hidden="true"></i>
               Tiến hành thanh toán
             </router-link>
+            
+            <router-link to="/checkout" class="btn-checkout buy-now-main">
+              <i class="bi bi-bag-check-fill" aria-hidden="true"></i>
+              <strong>MUA NGAY TẤT CẢ</strong>
+            </router-link>
 
             <router-link to="/" class="btn-continue">
               <i class="bi bi-arrow-left" aria-hidden="true"></i>
@@ -249,6 +254,25 @@ const removeItem = (itemId: number) => {
 onMounted(() => {
   loadCart()
 })
+
+const handleBuyNowAll = () => {
+  // 1. Kiểm tra giỏ hàng có rỗng không
+  if (cartItems.value.length === 0) {
+    alert("Giỏ hàng của bạn đang rỗng!");
+    return;
+  }
+
+  // 2. Kiểm tra đăng nhập (Ví dụ giả định)
+  const isLoggedIn = localStorage.getItem('userToken');
+  if (!isLoggedIn) {
+    alert("Vui lòng đăng nhập để tiếp tục thanh toán");
+    router.push('/login');
+    return;
+  }
+
+  // 3. Nếu ổn thì đi đến trang thanh toán
+  router.push('/checkout');
+}
 </script>
 
 <style scoped>
@@ -727,5 +751,25 @@ onMounted(() => {
   .summary-card {
     padding: 1rem;
   }
+}
+
+.buy-now-main {
+  background: linear-gradient(135deg, #ff4757, #ff6b81) !important; /* Màu đỏ gradient rực rỡ */
+  border: none !important;
+  font-size: 1.1rem !important;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.buy-now-main:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.6);
+  filter: brightness(1.1);
+}
+
+.buy-now-main i {
+  font-size: 1.3rem;
 }
 </style>
