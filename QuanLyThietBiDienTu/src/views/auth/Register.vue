@@ -181,20 +181,25 @@ const validateName = (): boolean => {
 }
 
 const validateEmail = (): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  // Regex chặt chẽ hơn:
+  // 1. Phải bắt đầu bằng chữ hoặc số
+  // 2. Tên miền phải hợp lệ
+  // 3. Đuôi tên miền (TLD) phải từ 2 ký tự trở lên (ví dụ .vn, .com) và là chữ cái
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   if (!form.value.email.trim()) {
-    errors.value.email = 'Vui lòng nhập email'
-    return false
+    errors.value.email = 'Vui lòng nhập email';
+    return false;
   }
 
+  // Kiểm tra Regex
   if (!emailRegex.test(form.value.email)) {
-    errors.value.email = 'Email không hợp lệ'
-    return false
+    errors.value.email = 'Email không hợp lệ (ví dụ: user@domain.com)';
+    return false;
   }
 
-  delete errors.value.email
-  return true
+  delete errors.value.email;
+  return true;
 }
 
 const validatePassword = (): boolean => {
