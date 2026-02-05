@@ -160,16 +160,16 @@
                 <span class="summary-value">{{ formatPrice(totalAmount) }}</span>
               </div>
 
-              <button type="submit" class="btn-submit" :disabled="isSubmitting">
-                <span v-if="!isSubmitting">
-                  <i class="bi bi-check-circle" aria-hidden="true"></i>
-                  Xác nhận đặt hàng
-                </span>
-                <span v-else>
-                  <i class="bi bi-arrow-repeat spinning" aria-hidden="true"></i>
-                  Đang xử lý...
-                </span>
-              </button>
+              <button type="submit" class="btn-submit btn-pay-now" :disabled="isSubmitting">
+  <span v-if="!isSubmitting">
+    <i class="bi bi-wallet2" aria-hidden="true"></i>
+    THANH TOÁN & MUA NGAY
+  </span>
+  <span v-else>
+    <i class="bi bi-arrow-repeat spinning" aria-hidden="true"></i>
+    Đang xử lý thanh toán...
+  </span>
+</button>
 
               <router-link to="/cart" class="btn-back">
                 <i class="bi bi-arrow-left" aria-hidden="true"></i>
@@ -422,6 +422,7 @@ const generateQRUrl = computed(() => {
   // Sử dụng API VietQR để tạo mã nhanh
   return `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${description}&accountName=Pham%20Tran%20Anh%20Quan`;
 })
+
 </script>
 
 <style scoped>
@@ -908,4 +909,6 @@ const generateQRUrl = computed(() => {
     margin: 0 auto;
   }
 }
+
+
 </style>
