@@ -44,14 +44,15 @@
 
             <tr v-else v-for="p in filteredProducts" :key="p.id">
               <td>{{ p.id }}</td>
-              <td>
-                <img
-                  :src="p.image.startsWith('http') ? p.image : `/src/assets/images/${p.image}`"
-                  width="60"
-                  class="rounded"
-                  @error="$event.target.src = 'https://via.placeholder.com/60'"
-                />
-              </td>
+          <td>
+            <img
+              :src="getImageUrl(p.image)"
+              width="60"
+              class="rounded"
+              style="object-fit: cover; aspect-ratio: 1/1;"
+              @error="$event.target.src = 'https://via.placeholder.com/60?text=No+Img'"
+            />
+          </td>
               <td>{{ p.name }}</td>
               <td>{{ p.category }}</td>
               <td class="text-orange fw-bold">
@@ -142,21 +143,17 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios' // ⚠️ Đừng quên cài: npm install axios
+import axios from 'axios'
 
 const router = useRouter()
-
-/* ===================== CẤU HÌNH API ===================== */
-// Thay đổi URL này thành URL API thật của nhóm bạn
 const API_URL = 'http://localhost:3000/products';
 
 /* ===================== STATE ===================== */
 const keyword = ref('')
 const showForm = ref(false)
 const isEdit = ref(false)
-const isLoading = ref(false) // Trạng thái đang tải danh sách
-const isSaving = ref(false)  // Trạng thái đang lưu
-
+const isLoading = ref(false)
+const isSaving = ref(false)
 const products = ref([])
 
 const form = ref({
@@ -168,123 +165,86 @@ const form = ref({
   description: ''
 })
 
-/* ===================== GỌI API (GET) ===================== */
+/* ===================== HELPER XỬ LÝ ẢNH ===================== */
+// Hàm này giúp hiển thị ảnh đúng dù trong DB lưu tên file hay đường dẫn full
+const getImageUrl = (imageName) => {
+  if (!imageName) return 'https://via.placeholder.com/60';
+  // Nếu là link online
+  if (imageName.startsWith('http')) return imageName;
+  // Nếu data cũ trong db.json đã có sẵn /src/... thì dùng luôn
+  if (imageName.startsWith('/')) return imageName;
+  // Nếu chỉ là tên file (vd: cpu.png) thì nối thêm đường dẫn
+  return `/src/assets/images/${imageName}`;
+}
+
+/* ===================== API ACTIONS ===================== */
 const fetchProducts = async () => {
   isLoading.value = true;
   try {
     const response = await axios.get(API_URL);
     products.value = response.data;
-    console.log("Đã tải xong danh sách sản phẩm!");
   } catch (error) {
-    console.error('Lỗi kết nối API:', error);
-    alert('Không thể kết nối đến Server! Vui lòng kiểm tra lại API.');
+    console.error('Lỗi API:', error);
   } finally {
     isLoading.value = false;
   }
 }
 
-/* ===================== COMPUTED ===================== */
-const filteredProducts = computed(() =>
-  products.value.filter(p =>
-    p.name.toLowerCase().includes(keyword.value.toLowerCase())
-  )
-)
-
-/* ===================== FORM ACTIONS ===================== */
-const openAdd = () => {
-  isEdit.value = false
-  form.value = {
-    id: null, // ID sẽ do Server tự sinh
-    name: '',
-    category: '',
-    price: null,
-    image: '',
-    description: ''
-  }
-  showForm.value = true
-}
-
-const openEdit = (p) => {
-  isEdit.value = true
-  // Copy dữ liệu vào form để sửa
-  form.value = { ...p }
-  showForm.value = true
-}
-
-const closeForm = () => {
-  showForm.value = false
-}
-
-/* ===================== SAVE (POST / PUT) ===================== */
 const save = async () => {
-  // Validate cơ bản
-  if (!form.value.name || !form.value.category) {
-    alert('⚠️ Vui lòng nhập tên và danh mục!')
-    return
-  }
-  if (!form.value.price || form.value.price <= 0) {
-    alert('⚠️ Giá phải lớn hơn 0')
-    return
-  }
-
+  if (!form.value.name || !form.value.price) return alert('Vui lòng nhập đủ thông tin!');
+  
   isSaving.value = true;
   try {
     if (isEdit.value) {
-      // --- SỬA (PUT) ---
-      // Gọi API: PUT http://localhost:3000/products/1
       await axios.put(`${API_URL}/${form.value.id}`, form.value);
-      alert('✅ Cập nhật thành công!');
+      alert('Đã cập nhật!');
     } else {
-      // --- THÊM (POST) ---
-      // Gọi API: POST http://localhost:3000/products
-      // Lưu ý: Không cần gửi ID, Server tự tạo
-      const { id, ...productData } = form.value; 
-      await axios.post(API_URL, productData);
-      alert('✅ Thêm mới thành công!');
+      const { id, ...data } = form.value; // Bỏ ID để server tự tạo
+      await axios.post(API_URL, data);
+      alert('Đã thêm mới!');
     }
-    
-    // Tắt form và tải lại danh sách mới nhất
     closeForm();
     await fetchProducts();
-
   } catch (error) {
-    console.error('Lỗi khi lưu:', error);
-    alert('❌ Có lỗi xảy ra. Vui lòng thử lại!');
+    console.error(error);
+    alert('Lỗi khi lưu!');
   } finally {
     isSaving.value = false;
   }
 }
 
-/* ===================== REMOVE (DELETE) ===================== */
 const remove = async (id) => {
-  if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) {
-    try {
-      // Gọi API: DELETE http://localhost:3000/products/1
-      await axios.delete(`${API_URL}/${id}`);
-      
-      // Xóa thành công thì tải lại danh sách
-      // (Hoặc có thể xóa luôn trên giao diện để đỡ gọi API lại)
-      products.value = products.value.filter(p => p.id !== id);
-      
-      alert('🗑️ Đã xóa thành công!');
-    } catch (error) {
-      console.error('Lỗi khi xóa:', error);
-      alert('❌ Không thể xóa sản phẩm này!');
-    }
+  if (!confirm('Xóa sản phẩm này?')) return;
+  try {
+    await axios.delete(`${API_URL}/${id}`);
+    // Xóa nhanh trên giao diện
+    products.value = products.value.filter(p => p.id !== id);
+  } catch (error) {
+    alert('Không thể xóa!');
   }
 }
 
-/* ===================== NAVIGATE ===================== */
-const viewDetail = (id) => {
-  router.push(`/admin/products/${id}`)
+/* ===================== UI ACTIONS ===================== */
+const filteredProducts = computed(() =>
+  products.value.filter(p => p.name.toLowerCase().includes(keyword.value.toLowerCase()))
+)
+
+const openAdd = () => {
+  isEdit.value = false;
+  form.value = { id: null, name: '', category: '', price: null, image: '', description: '' };
+  showForm.value = true;
 }
 
-/* ===================== LIFECYCLE ===================== */
-onMounted(() => {
-  // Gọi hàm lấy dữ liệu ngay khi vào trang
-  fetchProducts();
-})
+const openEdit = (p) => {
+  isEdit.value = true;
+  form.value = { ...p };
+  showForm.value = true;
+}
 
+const closeForm = () => showForm.value = false;
+const viewDetail = (id) => router.push(`/admin/products/${id}`);
+
+onMounted(fetchProducts);
 </script>
 
 <style scoped>
