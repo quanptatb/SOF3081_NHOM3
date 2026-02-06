@@ -77,6 +77,13 @@
             <span>hoặc</span>
           </div>
 
+          <!-- Google Login Button -->
+          <button @click="handleGoogleLogin" type="button" class="btn-google" :disabled="isLoadingGoogle">
+            <i class="bi bi-google" aria-hidden="true"></i>
+            <span v-if="!isLoadingGoogle">Đăng nhập với Google</span>
+            <span v-else>Đang xử lý...</span>
+          </button>
+
           <!-- Login Link -->
           <div class="auth-footer">
             <p>Đã có tài khoản?</p>
@@ -123,6 +130,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '../../composables/useToast'
+import { useGoogleAuth } from '../../composables/useGoogleAuth'
 import axios from 'axios'
 
 /**
@@ -147,7 +155,10 @@ const form = ref({
 
 const showPassword = ref(false)
 const isLoading = ref(false)
+const isLoadingGoogle = ref(false)
 const errors = ref<{ name?: string; email?: string; password?: string }>({})
+
+const { signInWithGoogle } = useGoogleAuth()
 
 /**
  * Password Strength
@@ -259,7 +270,7 @@ const handleRegister = async () => {
   try {
     // Check if email already exists via API
     const checkResponse = await axios.get(`${API_URL}?email=${form.value.email}`)
-    
+
     if (checkResponse.data && checkResponse.data.length > 0) {
       toast().error('Email này đã được đăng ký', '❌ Đăng ký thất bại')
       errors.value.email = 'Email đã tồn tại'
@@ -290,6 +301,36 @@ const handleRegister = async () => {
     toast().error('Không thể kết nối đến server. Vui lòng thử lại!')
   } finally {
     isLoading.value = false
+  }
+}
+
+/**
+ * Handle Google Login
+ */
+const handleGoogleLogin = async () => {
+  isLoadingGoogle.value = true
+
+  try {
+    const result = await signInWithGoogle()
+
+    if (result.success && result.user) {
+      // Save user to localStorage
+      localStorage.setItem("currentUser", JSON.stringify(result.user))
+
+      toast().success(`Chào mừng ${result.user.name}!`, "✅ Đăng nhập thành công")
+
+      // Redirect to home (Google users are always normal users)
+      setTimeout(() => {
+        router.push("/")
+      }, 500)
+    } else {
+      toast().error(result.error || "Đăng nhập thất bại", "❌ Lỗi")
+    }
+  } catch (error) {
+    console.error("Google login error:", error)
+    toast().error("Không thể đăng nhập với Google")
+  } finally {
+    isLoadingGoogle.value = false
   }
 }
 </script>
@@ -561,6 +602,42 @@ const handleRegister = async () => {
 .link-secondary:hover {
   color: var(--primary-hover);
   text-decoration: underline;
+}
+
+/* Google Button */
+.btn-google {
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  color: var(--dark-color);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-google:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  background: rgba(13, 110, 253, 0.05);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-google i {
+  font-size: 1.25rem;
+  color: #DB4437;
 }
 
 /* Illustration Side */

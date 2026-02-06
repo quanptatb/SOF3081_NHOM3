@@ -11,6 +11,7 @@ import UserProduct from "@/views/UserProduct.vue";
 import ProductDetailUser from "@/views/ProductDetailUser.vue";
 import Cart from "../views/Cart.vue";
 import Checkout from "../views/Checkout.vue";
+import Profile from "../views/Profile.vue";
 
 // --- Auth Views ---
 import Login from "@/views/auth/Login.vue";
@@ -21,7 +22,7 @@ const routes = [
   {
     path: '/login',
     component: Login,
-    meta: { layout: 'empty' } 
+    meta: { layout: 'empty' }
   },
   {
     path: '/register',
@@ -70,6 +71,11 @@ const routes = [
     component: Checkout,
     meta: { requiresAuth: true } // Bắt buộc đăng nhập để thanh toán
   },
+  {
+    path: "/profile",
+    component: Profile,
+    meta: { requiresAuth: true } // Bắt buộc đăng nhập để xem profile
+  },
 ];
 
 const router = createRouter({
@@ -95,7 +101,7 @@ router.beforeEach((to, from, next) => {
     if (to.meta.role && to.meta.role !== user.role) {
       alert("Bạn không có quyền truy cập trang này!");
       // Nếu là admin cố vào trang user thì ok, nhưng user thường vào trang admin thì đá về Home
-      return next('/'); 
+      return next('/');
     }
   }
 

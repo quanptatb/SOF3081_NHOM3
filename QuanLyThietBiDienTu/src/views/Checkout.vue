@@ -183,6 +183,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { sendOrderConfirmation } from '../composables/useEmail'
 import axios from 'axios'
 
 /**
@@ -278,7 +279,7 @@ const loadCart = async () => {
 
     // Fetch cart from API
     const response = await axios.get(`${CART_API_URL}?userId=${userId}`)
-    
+
     if (response.data && response.data.length > 0) {
       const cart = response.data[0]
       cartItems.value = cart.items || []
@@ -416,6 +417,30 @@ const handleSubmit = async () => {
 
     // Dispatch event to update navbar
     window.dispatchEvent(new Event('storage'))
+
+    // Send order confirmation email
+    console.log('📧 Attempting to send order confirmation email...')
+    console.log('Current user:', currentUser)
+    console.log('User email:', currentUser.email)
+
+    try {
+      console.log('📤 Calling sendOrderConfirmation...')
+      await sendOrderConfirmation({
+        orderNumber: orderId,
+        customerName: formData.value.name,
+        items: cartItems.value,
+        total: totalAmount.value,
+        address: formData.value.address,
+        payment: formData.value.payment
+      }, currentUser.email)
+
+      console.log('✅ Order confirmation email sent')
+    } catch (emailError) {
+      console.error('⚠️ Failed to send email:', emailError)
+      console.error('Email error details:', emailError.message)
+      console.error('Email error stack:', emailError.stack)
+      // Don't block order completion if email fails
+    }
 
     // Show success message
     alert(`✅ Đặt hàng thành công!\n\nMã đơn hàng: #${orderId}\nChúng tôi sẽ liên hệ với bạn sớm nhất!`)

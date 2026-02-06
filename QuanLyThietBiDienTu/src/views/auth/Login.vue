@@ -83,6 +83,13 @@
             <span>hoặc</span>
           </div>
 
+          <!-- Google Login Button -->
+          <button @click="handleGoogleLogin" type="button" class="btn-google" :disabled="isLoadingGoogle">
+            <i class="bi bi-google" aria-hidden="true"></i>
+            <span v-if="!isLoadingGoogle">Đăng nhập với Google</span>
+            <span v-else>Đang xử lý...</span>
+          </button>
+
           <!-- Register Link -->
           <div class="auth-footer">
             <p>Chưa có tài khoản?</p>
@@ -100,6 +107,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "../../composables/useToast";
+import { useGoogleAuth } from "../../composables/useGoogleAuth";
 import axios from "axios";
 
 /**
@@ -119,7 +127,10 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const isLoading = ref(false)
-const errors = ref < { email?: string; password?: string } > ({})
+const isLoadingGoogle = ref(false)
+const errors = ref<{ email?: string; password?: string }>({})
+
+const { signInWithGoogle } = useGoogleAuth()
 
 /**
  * Validation
@@ -187,7 +198,7 @@ const handleLogin = async () => {
   try {
     // Fetch user from API by email
     const response = await axios.get(`${API_URL}?email=${email.value}`);
-    
+
     // Find user in response
     const targetUser = response.data && response.data.length > 0 ? response.data[0] : null;
 
@@ -200,7 +211,7 @@ const handleLogin = async () => {
         "❌ Đăng nhập thất bại"
       );
       errors.value.email = "Tài khoản chưa được đăng ký"; // Hiển thị lỗi đỏ ngay dưới ô input
-    } 
+    }
     else if (targetUser.password !== password.value) {
       // Trường hợp 2: Có Email nhưng sai Password -> Báo lỗi "Sai mật khẩu"
       toast().error(
@@ -208,7 +219,7 @@ const handleLogin = async () => {
         "❌ Đăng nhập thất bại"
       );
       errors.value.password = "Mật khẩu không đúng"; // Hiển thị lỗi đỏ ngay dưới ô input
-    } 
+    }
     else {
       // Trường hợp 3: Đúng cả 2 -> Đăng nhập thành công
       localStorage.setItem("currentUser", JSON.stringify(targetUser));
@@ -231,6 +242,40 @@ const handleLogin = async () => {
     toast().error("Không thể kết nối đến server. Vui lòng thử lại!");
   } finally {
     isLoading.value = false;
+  }
+};
+
+/**
+ * Handle Google Login
+ */
+const handleGoogleLogin = async () => {
+  isLoadingGoogle.value = true;
+
+  try {
+    const result = await signInWithGoogle();
+
+    if (result.success && result.user) {
+      // Save user to localStorage
+      localStorage.setItem("currentUser", JSON.stringify(result.user));
+
+      toast().success(`Chào mừng ${result.user.name}!`, "✅ Đăng nhập thành công");
+
+      // Redirect based on role
+      setTimeout(() => {
+        if (result.user.role === "admin") {
+          router.push("/admin/users");
+        } else {
+          router.push("/");
+        }
+      }, 500);
+    } else {
+      toast().error(result.error || "Đăng nhập thất bại", "❌ Lỗi");
+    }
+  } catch (error) {
+    console.error("Google login error:", error);
+    toast().error("Không thể đăng nhập với Google");
+  } finally {
+    isLoadingGoogle.value = false;
   }
 };
 </script>
@@ -529,6 +574,42 @@ const handleLogin = async () => {
 .link-secondary:hover {
   color: var(--primary-hover);
   text-decoration: underline;
+}
+
+/* Google Button */
+.btn-google {
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  color: var(--dark-color);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-google:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  background: rgba(13, 110, 253, 0.05);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-google i {
+  font-size: 1.25rem;
+  color: #DB4437;
 }
 
 /* Responsive */
