@@ -76,10 +76,111 @@
       </div>
     </main>
 
-    <footer class="bg-dark text-white text-center py-4 mt-auto">
+    <footer class="bg-dark text-white pt-4 pb-2 mt-auto" style="font-size: 13px;">
       <div class="container">
-        <p class="mb-1 fw-bold">Hệ thống Quản lý Thiết bị Điện tử</p>
-        <small class="text-white-50">© 2026 SD21305. All rights reserved.</small>
+        <div class="row">
+          <div class="col-md-3 mb-4">
+            <h6 class="fw-bold mb-3">KẾT NỐI VỚI CHÚNG TÔI</h6>
+            <div class="d-flex gap-2 mb-4">
+              <a href="#" class="text-white"><i class="bi bi-facebook fs-4 text-primary"></i></a>
+              <a href="#" class="text-white"><i class="bi bi-youtube fs-4 text-danger"></i></a>
+              <a href="#" class="text-white"><i class="bi bi-tiktok fs-4"></i></a>
+            </div>
+
+            <h6 class="fw-bold mb-2">TỔNG ĐÀI</h6>
+            <strong class="fs-5">0385 574 498</strong>
+
+            <p class="mb-1 mt-2">(Gọi khiếu nại - 8:00 - 21:30)</p>
+            <strong class="fs-5">0989 569 612</strong>
+
+            <p class="mb-1 mt-2">(Gọi bảo hành - 8:00 - 21:00)</p>
+
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <h6 class="fw-bold mb-3">VỀ CHÚNG TÔI</h6>
+            <ul class="list-unstyled d-flex flex-column gap-2">
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Giới thiệu về công ty</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Quy chế hoạt động</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Dự án Doanh nghiệp</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Tin tức khuyến mại</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Giới thiệu máy đổi trả</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Tra cứu hóa đơn điện tử</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Tra cứu bảo hành</a></li>
+            </ul>
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <h6 class="fw-bold mb-3">CHÍNH SÁCH</h6>
+            <ul class="list-unstyled d-flex flex-column gap-2">
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Chính sách bảo hành</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Chính sách đổi trả</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Chính sách bảo mật</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Chính sách trả góp</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Quy định về hỗ trợ kỹ thuật</a></li>
+              <li><a href="#" class="text-white-50 text-decoration-none hover-white">Chính sách giao hàng & lắp đặt</a></li>
+            </ul>
+          </div>
+
+          <div class="col-md-3 mb-4">
+            <h6 class="fw-bold mb-3">HỖ TRỢ THANH TOÁN</h6>
+            
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <div class="payment-icon bg-light rounded d-flex align-items-center justify-content-center">
+                <span class="text-dark fw-bold small" style="font-size: 10px;">VISA</span>
+              </div>
+              <div class="payment-icon bg-light rounded d-flex align-items-center justify-content-center">
+                 <span class="text-dark fw-bold small" style="font-size: 10px;">Master</span>
+              </div>
+              <div class="payment-icon bg-light rounded d-flex align-items-center justify-content-center">
+                 <span class="text-warning fw-bold small" style="font-size: 10px;">JCB</span>
+              </div>
+              <div class="payment-icon bg-light rounded d-flex align-items-center justify-content-center" style="width: auto; padding: 0 5px;">
+                 <span class="text-primary fw-bold small" style="font-size: 10px;">VNPAY-QR</span>
+              </div>
+            </div>
+
+            <h6 class="fw-bold mb-2" style="font-size: 12px;">QUÉT MÃ QR</h6>
+            <div class="d-flex gap-3 mb-4">
+                <div class="qr-frame bg-white rounded p-1 shadow-sm">
+                    <img src="/src/assets/images/rickrollqr.png" alt="QR Thanh toán" class="img-fluid">
+                    <div class="text-dark text-center fw-bold mt-1" style="font-size: 10px;">Ngân hàng</div>
+                </div>
+
+                <div class="qr-frame bg-white rounded p-1 shadow-sm">
+                    <img src="/src/assets/images/rickrollqr2.png" alt="QR Zalo" class="img-fluid p-2">
+                     <div class="text-dark text-center fw-bold mt-1" style="font-size: 10px;">Zalo OA</div>
+                </div>
+            </div>
+            <h6 class="fw-bold mb-3">CHỨNG NHẬN</h6>
+            <div class="d-flex gap-2">
+               <div class="bg-white rounded p-1" style="width: 120px;">
+                  <img src="https://webmedia.com.vn/images/2021/09/logo-da-thong-bao-bo-cong-thuong-mau-xanh.png" class="img-fluid" alt="Đã thông báo BCT">
+               </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-secondary">
+
+        <div class="row align-items-center py-2">
+           <div class="col-md-12 text-center text-white-50 small">
+              <p class="mb-1">© 2026 Công ty Cổ phần Bán lẻ Kỹ thuật số NoName / Địa chỉ: Số 123 Đường ABC, Quận 1, TP.HCM</p>
+              <p class="mb-0">GPĐKKD số 0101010101 do Sở KHĐT TP.HCM cấp ngày 01/01/2026.</p>
+           </div>
+        </div>
+        
+        <div class="row justify-content-center mt-3 bg-secondary bg-opacity-25 py-3 rounded">
+           <div class="col-auto text-center">
+              <small class="d-block text-white-50 mb-1">Cửa hàng ủy quyền bởi Apple:</small>
+              <h5 class="fw-bold">F.Studio <span class="text-success">by NoName</span></h5>
+           </div>
+           <div class="col-auto text-center border-start border-secondary ps-4 ms-2">
+              <small class="d-block text-white-50 mb-1">Trung tâm bảo hành Apple:</small>
+              <h5 class="fw-bold">F.Care <span class="text-success">by NoName</span></h5>
+           </div>
+        </div>
+
       </div>
     </footer>
   </div>
@@ -184,4 +285,30 @@ const handleLogout = () => {
   justify-content: center;
   font-weight: bold;
 }
+
+.payment-icon {
+  width: 40px; /* Thu nhỏ lại chút cho gọn */
+  height: 25px;
+  border: 1px solid #444;
+}
+
+/* CSS MỚI: Khung ảnh QR Code */
+.qr-frame {
+    width: 160px;  /* Chiều rộng khung */
+    height: 160px; /* Chiều cao tự động theo nội dung */
+    border: 1px solid #e0e0e0; /* Viền sáng màu hơn cho nổi bật trên nền tối */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff !important; /* Đảm bảo nền trắng để dễ quét mã */
+}
+
+.qr-frame img {
+    width: 250px; /* Kích thước ảnh QR bên trong */
+    height: 290px;
+    object-fit: contain;
+}
+
+
 </style>

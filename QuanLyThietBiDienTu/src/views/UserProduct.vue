@@ -1,5 +1,33 @@
 <template>
-  <div class="container my-2" v-if="products">
+  <div class="row mb-4">
+  <div class="col-12"> 
+    <div id="headerCarousel" class="carousel slide shadow rounded-3 overflow-hidden" data-bs-ride="carousel" data-bs-interval="5000">
+      <div class="carousel-indicators">
+          <button v-for="(banner, index) in banners" :key="banner.id" 
+                  type="button" data-bs-target="#headerCarousel" 
+                  :data-bs-slide-to="index" 
+                  :class="{ active: index === 0 }"
+                  aria-current="true"></button>
+        </div>
+
+        <div class="carousel-inner">
+          <div v-for="(banner, index) in banners" :key="banner.id" 
+               class="carousel-item" :class="{ active: index === 0 }">
+            <img :src="banner.image" class="d-block w-100 banner-img" :alt="banner.alt">
+          </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#headerCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon bg-dark rounded-circle bg-opacity-25 p-3" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#headerCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon bg-dark rounded-circle bg-opacity-25 p-3" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+  </div>
+</div>
     <div class="row">
       <div class="col-12">
         <p class="small text-muted mb-3" v-if="search">
@@ -55,7 +83,6 @@
         </nav>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -91,10 +118,18 @@ onUnmounted(() => {
 
 // (Dữ liệu banks và products giữ nguyên như code cũ của bạn bên dưới)
 const banks = [
-  { id: 'scb', logo: '/src/assets/images/scb.png', detail: 'Giảm 800k qua thẻ Visa SCB' },
-  { id: 'ocb', logo: '/src/assets/images/ocb.png', detail: 'Giảm 500k qua thẻ OCB' },
-  { id: 'kredivo', logo: '/src/assets/images/kredivo.png', detail: 'Giảm 5% tối đa 200k' },
-  { id: 'homepay', logo: '/src/assets/images/homepay.png', detail: 'Giảm 5% qua HomePayLater' }
+  { id: 'scb', logo: '/src/assets/images/scb.png', detail: 'Giảm ngay 800.000đ cho đơn từ 8 triệu khi thanh toán qua thẻ Visa SCB. (HSD: 30/06/2026)' },
+  { id: 'ocb', logo: '/src/assets/images/ocb.png', detail: 'Giảm ngay 500.000đ cho đơn hàng từ 10 triệu khi thanh toán bằng thẻ OCB. (HSD: 28/02/2026)' },
+  { id: 'kredivo', logo: '/src/assets/images/kredivo.png', detail: 'Giảm ngay 50% tối đa 100.000đ cho Khách hàng mới hoặc Giảm 5% tối đa 200.000đ đơn từ 700k qua Kredivo.' },
+  { id: 'homepay', logo: '/src/assets/images/homepay.png', detail: 'Giảm ngay 5% tối đa 50.000đ cho Khách hàng thân thiết khi thanh toán qua HomePayLater.' }                                               
+];
+
+// 🖼️ Dữ liệu Banner (Bạn thay link ảnh của bạn vào đây nhé)
+const banners = [
+  { id: 1, image: '/src/assets/images/banner1.png', alt: 'Khuyến mãi 1' },
+  { id: 2, image: '/src/assets/images/banner2.png', alt: 'Khuyến mãi 2' },
+  { id: 3, image: '/src/assets/images/banner3.png', alt: 'Khuyến mãi 3' },
+  { id: 3, image: '/src/assets/images/banner4.png', alt: 'Khuyến mãi 4' }
 ];
 
 // Products will be loaded from API
@@ -162,6 +197,7 @@ const paginatedProducts = computed(() => {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -178,6 +214,7 @@ const paginatedProducts = computed(() => {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -232,6 +269,7 @@ const paginatedProducts = computed(() => {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   color: #333;
 }
@@ -285,6 +323,7 @@ const paginatedProducts = computed(() => {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
   word-break: break-word;
@@ -301,5 +340,50 @@ const paginatedProducts = computed(() => {
 .page-item.active .page-link {
   background-color: #2f80ed;
   color: #fff;
+}
+
+/* Sửa lại class này trong thẻ <style scoped> */
+.banner-img {
+  /* Giảm chiều cao xuống, bạn có thể thử 200px, 220px, 250px tùy mắt nhìn */
+  height: 530px; 
+  
+  /* Giữ nguyên dòng này để ảnh tự cắt bớt phần thừa trên dưới, không bị méo */
+  object-fit: cover; 
+  object-position: center;
+}
+
+/* Ẩn nút prev/next khi chưa hover để nhìn gọn hơn (tùy chọn) */
+#headerCarousel .carousel-control-prev,
+#headerCarousel .carousel-control-next {
+  width: 5%;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#headerCarousel:hover .carousel-control-prev,
+#headerCarousel:hover .carousel-control-next {
+  opacity: 1;
+}
+
+/* --- TÙY CHỈNH DẤU GẠCH NGANG CAROUSEL --- */
+
+/* 1. Định dạng chung cho các dấu gạch (trạng thái chưa chọn) */
+#headerCarousel .carousel-indicators button {
+  background-color: #690000 !important; /* Màu đỏ thẫm (như ảnh 2) */
+  opacity: 0.6;                         /* Độ mờ vừa phải */
+  height: 4px;                          /* Độ dày */
+  width: 30px;                          /* Chiều dài */
+  border: none;                         /* Bỏ viền trắng mặc định */
+  border-radius: 2px;                   /* Bo góc nhẹ cho mềm mại */
+  margin: 0 4px;                        /* Khoảng cách giữa các gạch */
+  transition: all 0.3s ease;            /* Hiệu ứng chuyển màu mượt mà */
+}
+
+/* 2. Định dạng cho dấu gạch ĐANG CHỌN (Active) */
+#headerCarousel .carousel-indicators .active {
+  background-color: #ff0000 !important; /* Màu đỏ tươi nổi bật */
+  opacity: 1;                           /* Hiển thị rõ 100% */
+  width: 40px;                          /* Dài hơn một chút để tạo điểm nhấn */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Thêm bóng đổ nhẹ cho nổi */
 }
 </style>

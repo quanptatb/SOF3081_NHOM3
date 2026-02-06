@@ -116,17 +116,22 @@
                     </div>
                 </div>
 
-                <div class="row g-2">
-                    <div class="col-6">
-                        <button @click="buyNow" :disabled="isLoadingBuyNow"
-                            class="btn btn-danger w-100 py-2 fw-bold text-uppercase shadow-sm d-flex flex-column align-items-center">
-                            <span v-if="!isLoadingBuyNow">Mua ngay</span>
-                            <span v-else>Đang xử lý...</span>
-                            <span v-if="!isLoadingBuyNow" style="font-size: 9px; font-weight: normal;">Giao tận nơi hoặc
-                                nhận tại kho</span>
+                <div class="d-flex align-items-center mb-3">
+                    <strong class="text-dark small me-3">Số lượng:</strong>
+                    <div class="input-group input-group-sm" style="width: 120px;">
+                        <button class="btn btn-outline-secondary" type="button" @click="decreaseQuantity">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                        <input type="text" class="form-control text-center text-dark fw-bold bg-white" 
+                               v-model="quantity" readonly>
+                        <button class="btn btn-outline-secondary" type="button" @click="increaseQuantity">
+                            <i class="bi bi-plus"></i>
                         </button>
                     </div>
-                    <div class="col-6">
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-12 text-center">
                         <button @click="addToCart"
                             class="btn btn-outline-primary w-100 py-2 fw-bold text-uppercase shadow-sm h-100 d-flex flex-column align-items-center justify-content-center">
                             <i class="bi bi-cart-plus fs-5 mb-1"></i>
@@ -134,7 +139,8 @@
                         </button>
                     </div>
                 </div>
-            </div>
+
+            
 
             <div class="card border-0 shadow-sm mb-4 bg-white p-4 mt-4">
                 <h5 class="fw-bold mb-4 text-dark">Đánh giá & Nhận xét {{ product.name }}</h5>
@@ -157,7 +163,7 @@
                         </div>
                     </div>
                 </div>
-
+            </div>
                 <div class="comment-list">
                     <div v-for="(comment, index) in localComments" :key="index"
                         class="comment-item border-bottom pb-3 mb-4">
@@ -268,9 +274,270 @@ const submitReview = () => {
 
 // --- PRODUCT DATA & PRICE ---
 const products = [
-    { id: 1, name: 'CPU Intel Core i5 12400F', category: 'CPU', price: 4500000, images: ['/src/assets/images/inteli5.png', '/src/assets/images/inteli5anh2.png', '/src/assets/images/inteli5anh3.png', '/src/assets/images/inteli5anh4.png'], specs: { 'Nhân/Luồng': '6/12', 'Xung nhịp': '2.5GHz - 4.4GHz', 'Socket': 'LGA 1700' } },
-    { id: 2, name: 'CPU Intel Core i7 13700F', category: 'CPU', price: 6500000, images: ['/src/assets/images/inteli7.png'], specs: { 'Nhân/Luồng': '16/24', 'Turbo': '5.2GHz', 'Socket': 'LGA 1700' } },
-    // Các sản phẩm khác dán tiếp vào đây...
+    {
+      "id": 1,
+      "name": "CPU Intel i5 12400F (LGA 1700/6 Core-12 Thread)",
+      "category": "CPU",
+      "price": 4500000,
+      "images": [
+        "/src/assets/images/inteli5.png",
+        "/src/assets/images/inteli5anh2.png",
+        "/src/assets/images/inteli5anh3.png",
+        "/src/assets/images/inteli5anh4.png",
+        "/src/assets/images/inteli5anh5.png",
+        "/src/assets/images/inteli5anh6.png"
+      ],
+      "specs": { "Nhân/Luồng": "6/12", "Xung nhịp": "2.5GHz - 4.4GHz", "Socket": "LGA 1700" }
+    },
+    {
+      "id": 2,
+      "name": "CPU Intel i7 13700K Gaming Pro",
+      "category": "CPU",
+      "price": 6500000,
+      "images": [
+        "/src/assets/images/inteli7.png",
+        "/src/assets/images/inteli7anh2.png",
+        "/src/assets/images/inteli7anh3.png",
+        "/src/assets/images/inteli7anh4.png",
+        "/src/assets/images/inteli7anh5.png",
+        "/src/assets/images/inteli7anh6.png"
+      ],
+      "specs": { "Nhân/Luồng": "16/24", "Turbo": "5.4GHz", "Socket": "LGA 1700" }
+    },
+    {
+      "id": 3,
+      "name": "CPU Ryzen 5 5600X",
+      "category": "CPU",
+      "price": 4200000,
+      "images": [
+        "/src/assets/images/ryzen5.png",
+        "/src/assets/images/ryzen5anh2.png",
+        "/src/assets/images/ryzen5anh3.png",
+        "/src/assets/images/ryzen5anh4.png"
+      ],
+      "specs": { "Nhân/Luồng": "6/12", "Xung nhịp": "3.7GHz - 4.6GHz", "Socket": "AM4" }
+    },
+    {
+      "id": 4,
+      "name": "Bộ vi xử lý AMD Ryzen 7 8700G",
+      "category": "CPU",
+      "price": 7200000,
+      "images": [
+        "/src/assets/images/ryzen7.png",
+        "/src/assets/images/ryzen7anh2.png",
+        "/src/assets/images/ryzen7anh3.png",
+        "/src/assets/images/ryzen7anh4.png"
+      ],
+      "specs": { "Nhân/Luồng": "8/16", "Xung nhịp": "4.2GHz - 5.1GHz", "Socket": "AM5" }
+    },
+    {
+      "id": 5,
+      "name": "Ram Corsair Vengeance LPX 8GB (1x8GB) 3200",
+      "category": "RAM",
+      "price": 800000,
+      "images": [
+        "/src/assets/images/corsair8.png",
+        "/src/assets/images/corsair8anh2.png",
+        "/src/assets/images/corsair8anh3.png",
+        "/src/assets/images/corsair8anh4.png"
+      ],
+      "specs": { "Dung lượng": "8GB", "Bus": "3200MHz", "Loại": "DDR4" }
+    },
+    {
+      "id": 6,
+      "name": "RAM Laptop Kingston 8GB 3200MHz",
+      "category": "RAM",
+      "price": 1200000,
+      "images": [
+        "/src/assets/images/corsair16.png",
+        "/src/assets/images/corsair16anh2.png",
+        "/src/assets/images/corsair16anh3.png",
+        "/src/assets/images/corsair16anh4.png"
+      ],
+      "specs": { "Dung lượng": "8GB", "Bus": "3200MHz", "Loại": "DDR4 Laptop" }
+    },
+    {
+      "id": 7,
+      "name": "RAM Kingston 8GB",
+      "category": "RAM",
+      "price": 750000,
+      "images": [
+        "/src/assets/images/kingston8.png",
+        "/src/assets/images/kingston8anh2.png",
+        "/src/assets/images/kingston8anh3.png",
+        "/src/assets/images/kingston8anh4.png"
+      ],
+      "specs": { "Dung lượng": "8GB", "Bus": "2666MHz", "Loại": "DDR4" }
+    },
+    {
+      "id": 8,
+      "name": "RAM Kingston 16GB",
+      "category": "RAM",
+      "price": 1300000,
+      "images": [
+        "/src/assets/images/kingston16.png",
+        "/src/assets/images/kingston16anh2.png",
+        "/src/assets/images/kingston16anh3.png",
+        "/src/assets/images/kingston16anh4.png"
+      ],
+      "specs": { "Dung lượng": "16GB", "Bus": "3200MHz", "Loại": "DDR4" }
+    },
+    {
+      "id": 9,
+      "name": "MSI RTX 3050 VENTUS 2X 6G OC",
+      "category": "GPU",
+      "price": 6200000,
+      "images": [
+        "/src/assets/images/rtx3050.png",
+        "/src/assets/images/rtx3050anh2.png",
+        "/src/assets/images/rtx3050anh3.png",
+        "/src/assets/images/rtx3050anh4.png"
+      ],
+      "specs": { "VRAM": "6GB GDDR6", "Bus": "96-bit", "Nguồn phụ": "Không" }
+    },
+    {
+      "id": 10,
+      "name": "MSI RTX 3060 VENTUS 2X OC 12 GB",
+      "category": "GPU",
+      "price": 7800000,
+      "images": [
+        "/src/assets/images/rtx3060.png",
+        "/src/assets/images/rtx3060anh2.png",
+        "/src/assets/images/rtx3060anh3.png",
+        "/src/assets/images/rtx3060anh4.png"
+      ],
+      "specs": { "VRAM": "12GB GDDR6", "Bus": "192-bit", "Nguồn phụ": "1x8-pin" }
+    },
+    {
+      "id": 11,
+      "name": "ASUS Dual GeForce RTX 4060 V2 OC Edition 8GB",
+      "category": "GPU",
+      "price": 9500000,
+      "images": [
+        "/src/assets/images/rtx4060.png",
+        "/src/assets/images/rtx4060anh2.png",
+        "/src/assets/images/rtx4060anh3.png",
+        "/src/assets/images/rtx4060anh4.png"
+      ],
+      "specs": { "VRAM": "8GB GDDR6", "Bus": "128-bit", "Kiến trúc": "Ada Lovelace" }
+    },
+    {
+      "id": 12,
+      "name": "MSI GeForce GTX 1660 Ti ARMOR 6G OC",
+      "category": "GPU",
+      "price": 4800000,
+      "images": [
+        "/src/assets/images/gtx1660.png",
+        "/src/assets/images/gtx1660anh2.png",
+        "/src/assets/images/gtx1660anh3.png",
+        "/src/assets/images/gtx1660anh4.png"
+      ],
+      "specs": { "VRAM": "6GB GDDR6", "Bus": "192-bit", "Cổng": "HDMI, DP" }
+    },
+    {
+      "id": 13,
+      "name": "SSD Transcend 512GB",
+      "category": "SSD",
+      "price": 1400000,
+      "images": [
+        "/src/assets/images/trans512.png",
+        "/src/assets/images/trans512anh2.png",
+        "/src/assets/images/trans512anh3.png",
+        "/src/assets/images/trans512anh4.png"
+      ],
+      "specs": { "Dung lượng": "512GB", "Chuẩn": "SATA III", "Tốc độ đọc": "560MB/s" }
+    },
+    {
+      "id": 14,
+      "name": "SSD Kingston 1TB",
+      "category": "SSD",
+      "price": 2200000,
+      "images": [
+        "/src/assets/images/kingston1tb.png",
+        "/src/assets/images/kingston1tbanh2.png",
+        "/src/assets/images/kingston1tbanh3.png",
+        "/src/assets/images/kingston1tbanh4.png"
+      ],
+      "specs": { "Dung lượng": "1TB", "Chuẩn": "NVMe PCIe", "Tốc độ đọc": "3500MB/s" }
+    },
+    {
+      "id": 15,
+      "name": "HDD WD 1TB",
+      "category": "HDD",
+      "price": 900000,
+      "images": [
+        "/src/assets/images/wd1tb.png",
+        "/src/assets/images/wd1tbanh2.png",
+        "/src/assets/images/wd1tbanh3.png",
+        "/src/assets/images/wd1tbanh4.png"
+      ],
+      "specs": { "Dung lượng": "1TB", "Vòng quay": "7200RPM", "Bộ đệm": "64MB" }
+    },
+    {
+      "id": 16,
+      "name": "HDD Seagate 2TB",
+      "category": "HDD",
+      "price": 1600000,
+      "images": [
+        "/src/assets/images/seagate2tb.png",
+        "/src/assets/images/seagate2tbanh2.png",
+        "/src/assets/images/seagate2tbanh3.png",
+        "/src/assets/images/seagate2tbanh4.png"
+      ],
+      "specs": { "Dung lượng": "2TB", "Vòng quay": "7200RPM", "Bộ đệm": "256MB" }
+    },
+    {
+      "id": 17,
+      "name": "SSD Samsung 980 500GB",
+      "category": "SSD",
+      "price": 1800000,
+      "images": [
+        "/src/assets/images/samsung980.png",
+        "/src/assets/images/samsung980anh2.png",
+        "/src/assets/images/samsung980anh3.png",
+        "/src/assets/images/samsung980anh4.png"
+      ],
+      "specs": { "Dung lượng": "500GB", "Chuẩn": "NVMe PCIe 3.0", "Tốc độ đọc": "3100MB/s" }
+    },
+    {
+      "id": 18,
+      "name": "SSD Samsung 970 EVO 1TB",
+      "category": "SSD",
+      "price": 2900000,
+      "images": [
+        "/src/assets/images/samsung970.png",
+        "/src/assets/images/samsung970anh2.png",
+        "/src/assets/images/samsung970anh3.png",
+        "/src/assets/images/samsung970anh4.png"
+      ],
+      "specs": { "Dung lượng": "1TB", "Chuẩn": "NVMe PCIe 3.0", "Tốc độ đọc": "3500MB/s" }
+    },
+    {
+      "id": 19,
+      "name": "HDD Toshiba 1TB",
+      "category": "HDD",
+      "price": 850000,
+      "images": [
+        "/src/assets/images/toshiba1tb.png",
+        "/src/assets/images/toshiba1tbanh2.png",
+        "/src/assets/images/toshiba1tbanh3.png",
+        "/src/assets/images/toshiba1tbanh4.png"
+      ],
+      "specs": { "Dung lượng": "1TB", "Vòng quay": "5400RPM", "Kích thước": "2.5 inch" }
+    },
+    {
+      "id": 20,
+      "name": "HDD Seagate 4TB",
+      "category": "HDD",
+      "price": 2900000,
+      "images": [
+        "/src/assets/images/seagate4tb.png",
+        "/src/assets/images/seagate4tbanh2.png",
+        "/src/assets/images/seagate4tbanh3.png",
+        "/src/assets/images/seagate4tbanh4.png"
+      ],
+      "specs": { "Dung lượng": "4TB", "Vòng quay": "5900RPM", "Bộ đệm": "64MB" }
+    }
 ]
 const product = computed(() => products.find(p => p.id === id) || products[0])
 const formatPrice = (price) => price.toLocaleString('vi-VN') + ' đ'
@@ -278,20 +545,30 @@ const scrollToSpecs = () => document.getElementById('specs-section').scrollIntoV
 
 // --- PAYMENT OFFERS ---
 const paymentOffers = [
-    { id: 'scb', logo: '/src/assets/images/scb.png', detail: 'Giảm 800k qua Visa SCB.' },
-    { id: 'ocb', logo: '/src/assets/images/ocb.png', detail: 'Giảm 500k qua thẻ OCB.' },
-    { id: 'kredivo', logo: '/src/assets/images/kredivo.png', detail: 'Giảm 5% tối đa 200k qua Kredivo.' },
-    { id: 'homepay', logo: '/src/assets/images/homepay.png', detail: 'Giảm 5% qua HomePayLater.' }
+    { id: 'scb', logo: '/src/assets/images/scb.png', detail: 'Giảm ngay 800.000đ cho đơn từ 8 triệu khi thanh toán qua thẻ Visa SCB. (HSD: 30/06/2026)' },
+  { id: 'ocb', logo: '/src/assets/images/ocb.png', detail: 'Giảm ngay 500.000đ cho đơn hàng từ 10 triệu khi thanh toán bằng thẻ OCB. (HSD: 28/02/2026)' },
+  { id: 'kredivo', logo: '/src/assets/images/kredivo.png', detail: 'Giảm ngay 50% tối đa 100.000đ cho Khách hàng mới hoặc Giảm 5% tối đa 200.000đ đơn từ 700k qua Kredivo.' },
+  { id: 'homepay', logo: '/src/assets/images/homepay.png', detail: 'Giảm ngay 5% tối đa 50.000đ cho Khách hàng thân thiết khi thanh toán qua HomePayLater.' }
 ]
 const activeOffer = ref(paymentOffers[0])
 const manualSetActive = (id, detail) => { activeOffer.value = { id, detail } }
 
-const promotions = ['Tặng keo tản nhiệt khi mua CPU', 'Giảm 500k khi mua kèm Mainboard', 'Giảm 300k khi build trọn bộ PC']
+const promotions = ['Tặng keo tản nhiệt khi mua CPU', 'Giảm 670 k khi mua kèm Mainboard', 'Giảm 360k khi build trọn bộ PC']
 
 watch(() => route.params.id, () => { currentImageIndex.value = 0 })
 
 
 const quantity = ref(1)
+// --- THÊM 2 HÀM NÀY ---
+const increaseQuantity = () => {
+    quantity.value++
+}
+
+const decreaseQuantity = () => {
+    if (quantity.value > 1) {
+        quantity.value--
+    }
+}
 const isLoadingBuyNow = ref(false)
 
 const addToCart = async () => {

@@ -178,6 +178,20 @@
       "role": "user",
       "googleId": "sOMtAGZSttNsVDDIfsBb93bjKs13",
       "photoURL": "https://lh3.googleusercontent.com/a/ACg8ocJ2kIomPdSlykL4yZlMe-iwn-EHiwivkESrVmb1OUER8pJivCck=s96-c"
+    },
+    {
+      "id": "26c6",
+      "name": "Trần Thiên Khang",
+      "email": "khang@gmail.com",
+      "password": "Trankhang_0311",
+      "role": "user"
+    },
+    {
+      "id": "730b",
+      "name": "Khang Trần",
+      "email": "khangtttb01744@gmail.com",
+      "password": "Trankhang_0311",
+      "role": "user"
     }
   ],
   "carts": [
@@ -217,6 +231,68 @@
           "quantity": 1
         }
       ]
+    },
+    {
+      "id": "8396",
+      "items": [
+        {
+          "productId": 2,
+          "name": "CPU Intel i7 13700K Gaming Pro",
+          "price": 6500000,
+          "image": "/src/assets/images/inteli7.png",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "e2b6",
+      "items": [
+        {
+          "productId": 1,
+          "name": "CPU Intel i5 12400F (LGA 1700/6 Core-12 Thread)",
+          "price": 4500000,
+          "image": "/src/assets/images/inteli5.png",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "b588",
+      "items": [
+        {
+          "productId": 1,
+          "name": "CPU Intel i5 12400F (LGA 1700/6 Core-12 Thread)",
+          "price": 4500000,
+          "image": "/src/assets/images/inteli5.png",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "150b",
+      "userId": "730b",
+      "items": [
+        {
+          "productId": 1,
+          "name": "CPU Intel i5 12400F (LGA 1700/6 Core-12 Thread)",
+          "price": 4500000,
+          "image": "/src/assets/images/inteli5.png",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "userId": "26c6",
+      "items": [
+        {
+          "productId": 3,
+          "name": "CPU Ryzen 5 5600X",
+          "price": 4200000,
+          "image": "/src/assets/images/ryzen5.png",
+          "quantity": 5
+        }
+      ],
+      "id": "3e18"
     }
   ],
   "orders": [
@@ -455,6 +531,41 @@
           "price": 4500000,
           "image": "/src/assets/images/inteli5.png",
           "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "a74b",
+      "userId": "26c6",
+      "customerName": "Trần Khang",
+      "phone": "0989569612",
+      "address": "aaaaaaaaaa",
+      "payment": "BANK",
+      "note": "aaa",
+      "total": 54630000,
+      "createdAt": "2026-02-06T19:07:04.984Z",
+      "status": "Pending",
+      "items": [
+        {
+          "productId": 1,
+          "name": "CPU Intel Core i5 12400F",
+          "price": 4500000,
+          "image": "/src/assets/images/inteli5.png",
+          "quantity": 5
+        },
+        {
+          "productId": 3,
+          "name": "CPU Ryzen 5 5600X",
+          "price": 4200000,
+          "image": "/src/assets/images/ryzen5.png",
+          "quantity": 3
+        },
+        {
+          "productId": 2,
+          "name": "CPU Intel i7 13700K Gaming Pro",
+          "price": 6500000,
+          "image": "/src/assets/images/inteli7.png",
+          "quantity": 3
         }
       ]
     }
