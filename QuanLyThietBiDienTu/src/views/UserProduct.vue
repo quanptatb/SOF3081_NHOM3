@@ -1,18 +1,16 @@
 <template>
   <div class="row mb-4">
-  <div class="col-12"> 
-    <div id="headerCarousel" class="carousel slide shadow rounded-3 overflow-hidden" data-bs-ride="carousel" data-bs-interval="5000">
-      <div class="carousel-indicators">
-          <button v-for="(banner, index) in banners" :key="banner.id" 
-                  type="button" data-bs-target="#headerCarousel" 
-                  :data-bs-slide-to="index" 
-                  :class="{ active: index === 0 }"
-                  aria-current="true"></button>
+    <div class="col-12">
+      <div id="headerCarousel" class="carousel slide shadow rounded-3 overflow-hidden" data-bs-ride="carousel"
+        data-bs-interval="5000">
+        <div class="carousel-indicators">
+          <button v-for="(banner, index) in banners" :key="banner.id" type="button" data-bs-target="#headerCarousel"
+            :data-bs-slide-to="index" :class="{ active: index === 0 }" aria-current="true"></button>
         </div>
 
         <div class="carousel-inner">
-          <div v-for="(banner, index) in banners" :key="banner.id" 
-               class="carousel-item" :class="{ active: index === 0 }">
+          <div v-for="(banner, index) in banners" :key="banner.id" class="carousel-item"
+            :class="{ active: index === 0 }">
             <img :src="banner.image" class="d-block w-100 banner-img" :alt="banner.alt">
           </div>
         </div>
@@ -26,72 +24,73 @@
           <span class="visually-hidden">Next</span>
         </button>
       </div>
+    </div>
   </div>
-</div>
-    <div class="row">
-      <div class="col-12">
-        <p class="small fw-bold text-dark mb-3" v-if="search">
-          Tìm thấy <span class="text-purple">{{ filteredProducts.length }}</span> sản phẩm phù hợp
-        </p>
+  <div class="row">
+    <div class="col-12">
+      <p class="small fw-bold text-dark mb-3" v-if="search">
+        Tìm thấy <span class="text-purple">{{ filteredProducts.length }}</span> sản phẩm phù hợp
+      </p>
 
-        <div class="row g-3">
-          <div v-for="p in paginatedProducts" :key="p.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
-            <router-link :to="`/productuser/${p.id}`" class="text-decoration-none h-100 d-block">
-              <div class="card product-card-tgdd h-100 p-2">
-                
-                <div class="product-img-wrap mb-2">
-                  <img :src="p.image" class="img-fluid" loading="lazy" />
+      <div class="row g-3">
+        <div v-for="p in paginatedProducts" :key="p.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+          <router-link :to="`/productuser/${p.id}`" class="text-decoration-none h-100 d-block">
+            <div class="card product-card-tgdd h-100 p-2">
+
+              <div class="product-img-wrap mb-2">
+                <img :src="p.image" class="img-fluid" loading="lazy" />
+              </div>
+
+              <div class="card-body p-1 d-flex flex-column">
+                <h6 class="product-name text-black mb-2">{{ p.name }}</h6>
+
+                <div class="price-box mb-3">
+                  <span class="text-purple fw-bolder d-block price-main">{{ formatPrice(p.price) }}</span>
+                  <div class="d-flex align-items-center gap-2 mt-1">
+                    <span class="text-secondary text-decoration-line-through x-small fw-semibold">{{ formatPrice(p.price
+                      * 1.2) }}</span>
+                    <span class="badge bg-danger rounded-pill x-small">-20%</span>
+                  </div>
                 </div>
 
-                <div class="card-body p-1 d-flex flex-column">
-                  <h6 class="product-name text-black mb-2">{{ p.name }}</h6>
-                  
-                  <div class="price-box mb-3">
-                    <span class="text-purple fw-bolder d-block price-main">{{ formatPrice(p.price) }}</span>
-                    <div class="d-flex align-items-center gap-2 mt-1">
-                      <span class="text-secondary text-decoration-line-through x-small fw-semibold">{{ formatPrice(p.price * 1.2) }}</span>
-                      <span class="badge bg-danger rounded-pill x-small">-20%</span>
+                <div class="bank-promo-section mt-auto pt-2 border-top">
+                  <div class="d-flex gap-1 mb-2 flex-nowrap overflow-hidden justify-content-start">
+                    <div v-for="bank in banks" :key="bank.id" class="bank-icon-sm border rounded"
+                      @mouseover="p.hoveredPromo = bank.detail" @mouseleave="p.hoveredPromo = ''">
+                      <img :src="bank.logo" class="img-fluid" />
                     </div>
                   </div>
-
-                  <div class="bank-promo-section mt-auto pt-2 border-top">
-                    <div class="d-flex gap-1 mb-2 flex-nowrap overflow-hidden justify-content-start">
-                      <div v-for="bank in banks" :key="bank.id" class="bank-icon-sm border rounded"
-                        @mouseover="p.hoveredPromo = bank.detail" @mouseleave="p.hoveredPromo = ''">
-                        <img :src="bank.logo" class="img-fluid" />
-                      </div>
-                    </div>
-                    <div class="promo-text-holder">
-                      <p class="promo-text-limit text-purple fw-bold mb-0 animate__animated animate__fadeIn">
-                        {{ p.hoveredPromo || 'Rê chuột xem ưu đãi bank' }}
-                      </p>
-                    </div>
+                  <div class="promo-text-holder">
+                    <p class="promo-text-limit text-purple fw-bold mb-0 animate__animated animate__fadeIn">
+                      {{ p.hoveredPromo || 'Rê chuột xem ưu đãi bank' }}
+                    </p>
                   </div>
                 </div>
               </div>
-            </router-link>
-          </div>
+            </div>
+          </router-link>
         </div>
-
-        <nav class="mt-5" v-if="totalPages > 1">
-          <ul class="pagination justify-content-center">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }">
-              <button class="page-link shadow-sm" @click="currentPage--">
-                <i class="bi bi-chevron-left"></i> «
-              </button>
-            </li>
-            <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
-              <button class="page-link shadow-sm fw-bold" @click="currentPage = page">{{ page }}</button>
-            </li>
-            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-              <button class="page-link shadow-sm" @click="currentPage++">
-                » <i class="bi bi-chevron-right"></i>
-              </button>
-            </li>
-          </ul>
-        </nav>
       </div>
+
+      <nav class="mt-5" v-if="totalPages > 1">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" :class="{ disabled: currentPage === 1 }">
+            <button class="page-link shadow-sm" @click="currentPage--">
+              <i class="bi bi-chevron-left"></i> «
+            </button>
+          </li>
+          <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
+            <button class="page-link shadow-sm fw-bold" @click="currentPage = page">{{ page }}</button>
+          </li>
+          <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+            <button class="page-link shadow-sm" @click="currentPage++">
+              » <i class="bi bi-chevron-right"></i>
+            </button>
+          </li>
+        </ul>
+      </nav>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -129,7 +128,7 @@ const banks = [
   { id: 'scb', logo: '/src/assets/images/scb.png', detail: 'Giảm ngay 800.000đ cho đơn từ 8 triệu khi thanh toán qua thẻ Visa SCB. (HSD: 30/06/2026)' },
   { id: 'ocb', logo: '/src/assets/images/ocb.png', detail: 'Giảm ngay 500.000đ cho đơn hàng từ 10 triệu khi thanh toán bằng thẻ OCB. (HSD: 28/02/2026)' },
   { id: 'kredivo', logo: '/src/assets/images/kredivo.png', detail: 'Giảm ngay 50% tối đa 100.000đ cho Khách hàng mới hoặc Giảm 5% tối đa 200.000đ đơn từ 700k qua Kredivo.' },
-  { id: 'homepay', logo: '/src/assets/images/homepay.png', detail: 'Giảm ngay 5% tối đa 50.000đ cho Khách hàng thân thiết khi thanh toán qua HomePayLater.' }                                               
+  { id: 'homepay', logo: '/src/assets/images/homepay.png', detail: 'Giảm ngay 5% tối đa 50.000đ cho Khách hàng thân thiết khi thanh toán qua HomePayLater.' }
 ];
 
 // 🖼️ Dữ liệu Banner (Bạn thay link ảnh của bạn vào đây nhé)
@@ -221,7 +220,8 @@ const paginatedProducts = computed(() => {
 
 /* --- CARD SẢN PHẨM --- */
 .product-card-tgdd {
-  border: 1px solid #ced4da; /* Viền xám đậm hơn chút */
+  border: 1px solid #ced4da;
+  /* Viền xám đậm hơn chút */
   border-radius: 12px;
   transition: all 0.3s ease;
   background: #fff;
@@ -245,7 +245,8 @@ const paginatedProducts = computed(() => {
   justify-content: center;
   padding: 10px;
   background: #fff;
-  border-bottom: 1px solid #e9ecef; /* Đường kẻ dưới ảnh */
+  border-bottom: 1px solid #e9ecef;
+  /* Đường kẻ dưới ảnh */
 }
 
 .product-img-wrap img {
@@ -262,8 +263,8 @@ const paginatedProducts = computed(() => {
 
 /* --- TÊN & GIÁ --- */
 .product-name {
-  font-size: 15px; 
-  font-weight: 700; 
+  font-size: 15px;
+  font-weight: 700;
   height: 2.8rem;
   line-height: 1.4rem;
   overflow: hidden;
@@ -292,7 +293,8 @@ const paginatedProducts = computed(() => {
   background: #fff;
   cursor: pointer;
   padding: 3px;
-  border-color: #ced4da !important; /* Viền icon đậm hơn */
+  border-color: #ced4da !important;
+  /* Viền icon đậm hơn */
   transition: all 0.2s;
 }
 
@@ -353,10 +355,10 @@ const paginatedProducts = computed(() => {
 /* Sửa lại class này trong thẻ <style scoped> */
 .banner-img {
   /* Giảm chiều cao xuống, bạn có thể thử 200px, 220px, 250px tùy mắt nhìn */
-  height: 530px; 
-  
+  height: 530px;
+
   /* Giữ nguyên dòng này để ảnh tự cắt bớt phần thừa trên dưới, không bị méo */
-  object-fit: cover; 
+  object-fit: cover;
   object-position: center;
 }
 
@@ -377,21 +379,33 @@ const paginatedProducts = computed(() => {
 
 /* 1. Định dạng chung cho các dấu gạch (trạng thái chưa chọn) */
 #headerCarousel .carousel-indicators button {
-  background-color: #690000 !important; /* Màu đỏ thẫm (như ảnh 2) */
-  opacity: 0.6;                         /* Độ mờ vừa phải */
-  height: 4px;                          /* Độ dày */
-  width: 30px;                          /* Chiều dài */
-  border: none;                         /* Bỏ viền trắng mặc định */
-  border-radius: 2px;                   /* Bo góc nhẹ cho mềm mại */
-  margin: 0 4px;                        /* Khoảng cách giữa các gạch */
-  transition: all 0.3s ease;            /* Hiệu ứng chuyển màu mượt mà */
+  background-color: #690000 !important;
+  /* Màu đỏ thẫm (như ảnh 2) */
+  opacity: 0.6;
+  /* Độ mờ vừa phải */
+  height: 4px;
+  /* Độ dày */
+  width: 30px;
+  /* Chiều dài */
+  border: none;
+  /* Bỏ viền trắng mặc định */
+  border-radius: 2px;
+  /* Bo góc nhẹ cho mềm mại */
+  margin: 0 4px;
+  /* Khoảng cách giữa các gạch */
+  transition: all 0.3s ease;
+  /* Hiệu ứng chuyển màu mượt mà */
 }
 
 /* 2. Định dạng cho dấu gạch ĐANG CHỌN (Active) */
 #headerCarousel .carousel-indicators .active {
-  background-color: #ff0000 !important; /* Màu đỏ tươi nổi bật */
-  opacity: 1;                           /* Hiển thị rõ 100% */
-  width: 40px;                          /* Dài hơn một chút để tạo điểm nhấn */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Thêm bóng đổ nhẹ cho nổi */
+  background-color: #ff0000 !important;
+  /* Màu đỏ tươi nổi bật */
+  opacity: 1;
+  /* Hiển thị rõ 100% */
+  width: 40px;
+  /* Dài hơn một chút để tạo điểm nhấn */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  /* Thêm bóng đổ nhẹ cho nổi */
 }
 </style>
