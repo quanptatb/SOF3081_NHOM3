@@ -18,8 +18,7 @@
                   <div class="price-box mb-2">
                     <span class="text-dark fw-bold d-block fs-5">{{ formatPrice(p.price) }}</span>
                     <div class="d-flex align-items-center gap-2">
-                      <span class="text-muted text-decoration-line-through x-small">{{ formatPrice(p.price * 1.2)
-                        }}</span>
+                      <span class="text-muted text-decoration-line-through x-small">{{ formatPrice(p.price * 1.2) }}</span>
                       <span class="text-danger fw-bold x-small">-20%</span>
                     </div>
                   </div>
@@ -32,7 +31,7 @@
                       </div>
                     </div>
                     <div class="promo-text-holder">
-                      <p class="promo-text-limit text-primary mb-0 animate__animated animate__fadeIn">
+                      <p class="promo-text-limit text-purple mb-0 animate__animated animate__fadeIn">
                         {{ p.hoveredPromo || 'Rê chuột xem ưu đãi bank' }}
                       </p>
                     </div>
@@ -89,7 +88,6 @@ onUnmounted(() => {
   window.removeEventListener('nav-search-filter', handleNavbarFilter);
 });
 
-// (Dữ liệu banks và products giữ nguyên như code cũ của bạn bên dưới)
 const banks = [
   { id: 'scb', logo: '/src/assets/images/scb.png', detail: 'Giảm 800k qua thẻ Visa SCB' },
   { id: 'ocb', logo: '/src/assets/images/ocb.png', detail: 'Giảm 500k qua thẻ OCB' },
@@ -105,7 +103,6 @@ const loadProducts = async () => {
   isLoading.value = true;
   try {
     const response = await axios.get(PRODUCTS_API_URL);
-    // Add hoveredPromo field for bank promotion hover effect
     products.value = response.data.map(p => ({ ...p, hoveredPromo: '' }));
   } catch (error) {
     console.error('Error loading products:', error);
@@ -137,56 +134,11 @@ const paginatedProducts = computed(() => {
 </script>
 
 <style scoped>
-.product-card-tgdd {
-  border-radius: 12px;
-  transition: 0.3s;
-  background: #fff;
+/* --- TEXT MÀU TÍM --- */
+.text-purple {
+  color: #6f42c1 !important;
+  font-weight: 500;
 }
-
-.product-card-tgdd:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
-}
-
-.product-img-wrap {
-  height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-}
-
-.product-name {
-  font-size: 14px;
-  height: 2.8rem;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.bank-icon-sm {
-  width: 40px;
-  height: 24px;
-  padding: 2px;
-  cursor: pointer;
-}
-
-.promo-text-limit {
-  font-size: 11px;
-  height: 2.4rem;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.promo-text-holder {
-  min-height: 2.4rem;
-  display: flex;
-  align-items: center;
-}
-
 
 .product-card-tgdd {
   border-radius: 12px;
@@ -197,9 +149,10 @@ const paginatedProducts = computed(() => {
   flex-direction: column;
 }
 
+/* Hover: Đổ bóng màu tím nhạt cho đồng bộ */
 .product-card-tgdd:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 8px 25px rgba(111, 66, 193, 0.15) !important;
 }
 
 .product-img-wrap {
@@ -234,18 +187,22 @@ const paginatedProducts = computed(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   color: #333;
+  transition: color 0.3s;
+}
+
+/* Hover vào tên sản phẩm chuyển màu tím */
+.product-card-tgdd:hover .product-name {
+  color: #6f42c1;
 }
 
 .price-box .fs-5 {
   font-size: 1.1rem !important;
 }
 
-/* --- FIX LỖI BOX NGÂN HÀNG --- */
+/* --- BANK ICON --- */
 .bank-icon-sm {
   width: 38px;
-  /* Cố định độ rộng */
   height: 24px;
-  /* Cố định độ cao */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,24 +211,24 @@ const paginatedProducts = computed(() => {
   padding: 2px;
   overflow: hidden;
   flex-shrink: 0;
-  /* Không cho phép co lại */
+  transition: all 0.2s;
 }
 
 .bank-icon-sm img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* Logo bank luôn nằm gọn trong ô */
 }
 
+/* Hover bank icon ra màu tím */
 .bank-icon-sm:hover {
-  border-color: #2f80ed !important;
+  border-color: #6f42c1 !important;
+  background-color: #f3f0ff; /* Nền tím rất nhạt */
 }
 
-/* --- FIX LỖI TEXT ƯU ĐÃI (DẤU 3 CHẤM) --- */
+/* --- PROMO TEXT --- */
 .promo-text-holder {
   min-height: 2.4rem;
-  /* Giữ chỗ để card không bị nhảy khi hover */
   display: flex;
   align-items: center;
   margin-top: 5px;
@@ -281,7 +238,6 @@ const paginatedProducts = computed(() => {
   font-size: 11px;
   line-height: 1.2rem;
   height: 2.4rem;
-  /* Đúng bằng 2 dòng */
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -290,16 +246,23 @@ const paginatedProducts = computed(() => {
   word-break: break-word;
 }
 
-/* Pagination tinh chỉnh */
+/* --- PAGINATION MÀU TÍM --- */
 .page-link {
   border: none;
   color: #333;
   margin: 0 2px;
-  border-radius: 4px !important;
+  border-radius: 8px !important; /* Bo góc mềm mại hơn */
+  transition: all 0.3s;
+}
+
+.page-link:hover {
+  background-color: #e9ecef;
+  color: #6f42c1;
 }
 
 .page-item.active .page-link {
-  background-color: #2f80ed;
+  background-color: #6f42c1; /* Nền tím */
   color: #fff;
+  box-shadow: 0 2px 6px rgba(111, 66, 193, 0.4);
 }
 </style>
