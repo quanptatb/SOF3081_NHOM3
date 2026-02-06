@@ -144,9 +144,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { products } from '../data/products'
+// [MODIFIED 1]: Import axios để gọi API
+import axios from 'axios'
 import { toast } from '../composables/useToast'
 
 /**
@@ -156,102 +157,99 @@ const route = useRoute()
 const router = useRouter()
 
 /**
+ * Configuration API
+ * [LƯU Ý]: Đây là link API (giả lập hoặc thật). 
+ * Khi backend làm xong, bạn chỉ cần sửa link này.
+ */
+const API_URL = 'http://localhost:3000/products';
+
+/**
  * State
  */
 const isLoading = ref(true)
 const quantity = ref(1)
 const currentImage = ref('')
 
+// [MODIFIED 2]: Thay đổi cách khai báo biến dữ liệu
+// Không dùng mảng cứng productData nữa, mà dùng ref để hứng dữ liệu từ API
+const product = ref<any>(null) 
+const relatedProducts = ref<any[]>([]) 
+
 /**
- * Product data with full details
+ * [MODIFIED 3]: Hàm gọi API lấy chi tiết sản phẩm
  */
-const productData = [
-  {
-    id: 1,
-    name: 'CPU Intel i5',
-    category: 'CPU',
-    price: 4500000,
-    image: '/src/assets/images/inteli5.png',
-    description: 'CPU Intel Core i5 thế hệ mới với hiệu năng vượt trội, phù hợp cho học tập, làm việc văn phòng và lập trình cơ bản. Tiết kiệm điện năng, ổn định trong mọi tác vụ.',
-    specs: {
-      'Nhân / Luồng': '6 nhân / 12 luồng',
-      'Xung nhịp cơ bản': '3.2 GHz',
-      'Xung nhịp tối đa': '4.4 GHz',
-      'Socket': 'LGA 1700',
-      'Cache': '12 MB',
-      'TDP': '65W'
-    },
-    suitable: ['Học tập', 'Văn phòng', 'Lập trình cơ bản'],
-    createdAt: new Date('2024-01-15').toISOString()
-  },
-  {
-    id: 2,
-    name: 'CPU Intel i7',
-    category: 'CPU',
-    price: 6500000,
-    image: '/src/assets/images/inteli7.png',
-    description: 'CPU Intel Core i7 hiệu năng mạnh mẽ, xử lý đa nhiệm xuất sắc. Tối ưu cho gaming, thiết kế đồ họa và render video chuyên nghiệp.',
-    specs: {
-      'Nhân / Luồng': '8 nhân / 16 luồng',
-      'Xung nhịp cơ bản': '3.6 GHz',
-      'Turbo Boost': '5.0 GHz',
-      'Socket': 'LGA 1700',
-      'Cache': '16 MB',
-      'TDP': '125W'
-    },
-    suitable: ['Gaming', 'Designer', 'Render', 'Lập trình'],
-    createdAt: new Date().toISOString()
-  },
-  // Add other products following the same pattern...
-  ...products.slice(2).map((p, idx) => ({
-    ...p,
-    description: `Sản phẩm ${p.name} chất lượng cao với hiệu năng tốt trong phân khúc. Phù hợp cho nhiều nhu cầu sử dụng khác nhau.`,
-    specs: {
-      'Thương hiệu': p.name.split(' ')[0],
-      'Model': p.name,
-      'Phân loại': p.category
-    },
-    suitable: ['Đa dụng'],
-    createdAt: idx < 3 ? new Date().toISOString() : new Date('2023-12-01').toISOString()
-  }))
-]
+const fetchProductDetail = async () => {
+  const id = route.params.id; // Lấy ID từ trên thanh địa chỉ
+  isLoading.value = true;
+  product.value = null; // Reset dữ liệu cũ
+  
+  try {
+    // 1. Gọi API lấy chi tiết sản phẩm theo ID
+    // Ví dụ: GET http://localhost:3000/products/1
+    const response = await axios.get(`${API_URL}/${id}`);
+    product.value = response.data;
+
+    // Cập nhật ảnh hiện tại ngay khi có dữ liệu
+    if (product.value && product.value.image) {
+      currentImage.value = product.value.image;
+    }
+
+    // 2. Gọi API lấy sản phẩm liên quan (cùng danh mục)
+    // Ví dụ: GET http://localhost:3000/products?category=CPU&_limit=4
+    if (product.value) {
+      fetchRelatedProducts(product.value.category);
+    }
+
+  } catch (error) {
+    console.error("Lỗi khi tải chi tiết sản phẩm:", error);
+    // Nếu lỗi (vd: 404 Not Found), product vẫn là null -> Giao diện sẽ hiện "Không tìm thấy"
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+/**
+ * [MODIFIED 4]: Hàm lấy sản phẩm liên quan
+ */
+const fetchRelatedProducts = async (category: string) => {
+  try {
+    // Gọi API lọc theo category và lấy tối đa 5 sp (để trừ hao sp hiện tại)
+    const response = await axios.get(`${API_URL}?category=${category}&_limit=5`);
+    
+    // Lọc bỏ sản phẩm đang xem hiện tại ra khỏi danh sách liên quan
+    relatedProducts.value = response.data
+      .filter((p: any) => p.id !== product.value.id)
+      .slice(0, 4); // Chỉ lấy 4 sản phẩm
+  } catch (error) {
+    console.error("Lỗi tải sản phẩm liên quan:", error);
+  }
+}
 
 /**
  * Computed
+ * [MODIFIED 5]: Sửa lại các computed để an toàn khi product là null
  */
-const product = computed(() => {
-  const id = Number(route.params.id)
-  return productData.find(p => p.id === id)
-})
-
-const productSpecs = computed(() => product.value?.specs)
-const productDescription = computed(() => product.value?.description)
-const productSuitable = computed(() => product.value?.suitable)
+const productSpecs = computed(() => product.value?.specs || {})
+// Nếu không có mô tả từ API thì hiển thị đoạn văn mẫu
+const productDescription = computed(() => product.value?.description || `Sản phẩm ${product.value?.name} chính hãng với hiệu năng ổn định.`)
+const productSuitable = computed(() => product.value?.suitable || ['Đa dụng'])
 
 const productImages = computed(() => {
   if (!product.value) return []
-  // In a real app, you would have multiple images
   return [product.value.image]
 })
 
 const isNew = computed(() => {
-  if (!product.value?.createdAt) return false
-  const createdDate = new Date(product.value.createdAt)
-  const daysSinceCreation = (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24)
-  return daysSinceCreation < 7
-})
-
-const relatedProducts = computed(() => {
-  if (!product.value) return []
-  return productData
-    .filter(p => p.category === product.value!.category && p.id !== product.value!.id)
-    .slice(0, 4)
+  // Logic kiểm tra sản phẩm mới (dựa trên ID lớn hoặc trường createdAt nếu có)
+  // Ở đây giả lập tạm: nếu không có createdAt thì trả về false
+  return false; 
 })
 
 /**
  * Methods
  */
 const formatPrice = (price: number): string => {
+  if (!price) return 'Liên hệ';
   return price.toLocaleString('vi-VN') + ' ₫'
 }
 
@@ -275,7 +273,7 @@ const handleAddToCart = () => {
     const cartData = localStorage.getItem('cart')
     const cart = cartData ? JSON.parse(cartData) : []
 
-    const existingIndex = cart.findIndex((item: any) => item.id === product.value!.id)
+    const existingIndex = cart.findIndex((item: any) => item.id === product.value.id)
 
     if (existingIndex >= 0) {
       cart[existingIndex].quantity += quantity.value
@@ -312,12 +310,16 @@ const handleBuyNow = () => {
  * Lifecycle
  */
 onMounted(() => {
-  setTimeout(() => {
-    isLoading.value = false
-    if (product.value) {
-      currentImage.value = product.value.image
-    }
-  }, 500)
+  // [MODIFIED 6]: Gọi hàm fetch data khi trang vừa tải
+  fetchProductDetail();
+})
+
+// [MODIFIED 7]: Theo dõi ID trên URL
+// Khi người dùng click vào "Sản phẩm liên quan", ID thay đổi -> Gọi lại API để load sản phẩm mới
+watch(() => route.params.id, () => {
+  fetchProductDetail();
+  // Cuộn lên đầu trang
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 })
 </script>
 

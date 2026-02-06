@@ -85,7 +85,11 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { products as sourceProducts } from '../data/products'
+// [MODIFIED 1]: Import thư viện Axios để gọi API
+import axios from 'axios' 
+
+// [MODIFIED 2]: Xóa hoặc comment dòng import dữ liệu tĩnh này đi
+// import { products as sourceProducts } from '../data/products'
 
 // Import Components
 import ProductCard from '../components/ProductCard.vue'
@@ -113,10 +117,37 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null
 /**
  * Products Data
  */
-const products = ref(sourceProducts)
+// [MODIFIED 3]: Khởi tạo mảng rỗng thay vì dữ liệu import cứng
+const products = ref([]) 
+
+/**
+ * [MODIFIED 4]: Viết hàm lấy dữ liệu từ API
+ * Hàm này sẽ gọi Backend (nơi kết nối SQL Server) để lấy danh sách sản phẩm
+ */
+const fetchProducts = async () => {
+  // Bật trạng thái loading trước khi gọi
+  isLoading.value = true; 
+  try {
+    // ⚠️ QUAN TRỌNG: Thay URL bên dưới bằng API thực tế của nhóm bạn
+    // Ví dụ: 'https://localhost:7123/api/products' hoặc 'http://localhost:3000/products'
+    const response = await axios.get('http://localhost:3000/products');
+
+    // Gán dữ liệu từ API vào biến products
+    products.value = response.data;
+
+    console.log('Đã tải thành công:', products.value.length, 'sản phẩm');
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách sản phẩm:', error);
+    // Có thể thêm thông báo lỗi cho người dùng (alert hoặc toast)
+  } finally {
+    // Tắt trạng thái loading dù thành công hay thất bại
+    isLoading.value = false;
+  }
+}
 
 /**
  * Debounced Search Handler
+ * (Giữ nguyên không đổi)
  */
 const handleSearchInput = () => {
   if (searchTimeout) {
@@ -129,6 +160,7 @@ const handleSearchInput = () => {
 
 /**
  * Clear Search
+ * (Giữ nguyên không đổi)
  */
 const clearSearch = () => {
   searchQuery.value = ''
@@ -137,6 +169,7 @@ const clearSearch = () => {
 
 /**
  * Price Range Matching Logic
+ * (Giữ nguyên không đổi)
  */
 const matchesPriceRange = (price: number, range: string): boolean => {
   switch (range) {
@@ -153,14 +186,18 @@ const matchesPriceRange = (price: number, range: string): boolean => {
 
 /**
  * Filtered Products
+ * (Giữ nguyên logic lọc Client-side này)
+ * Vì products.value đã được điền dữ liệu từ API, computed này sẽ tự động chạy lại
  */
 const filteredProducts = computed(() => {
-  let filtered = products.value.filter((product) => {
+  let filtered = products.value.filter((product: any) => { // Thêm type any hoặc interface nếu cần
     const matchName = product.name
       .toLowerCase()
       .includes(debouncedSearch.value.toLowerCase())
     const matchCategory =
       category.value === 'Tất cả' || product.category === category.value
+    
+    // Lưu ý: Đảm bảo dữ liệu từ API trả về trường 'price' là số (number)
     const matchPrice = matchesPriceRange(product.price, priceRange.value)
 
     return matchName && matchCategory && matchPrice
@@ -168,7 +205,7 @@ const filteredProducts = computed(() => {
 
   // Apply sorting
   if (sortBy.value !== 'default') {
-    filtered = [...filtered].sort((a, b) => {
+    filtered = [...filtered].sort((a: any, b: any) => {
       switch (sortBy.value) {
         case 'name-asc':
           return a.name.localeCompare(b.name)
@@ -188,7 +225,8 @@ const filteredProducts = computed(() => {
 })
 
 /**
- * Pagination
+ * Pagination & UI Helpers
+ * (Giữ nguyên không đổi)
  */
 const totalPages = computed(() =>
   Math.ceil(filteredProducts.value.length / PAGE_SIZE)
@@ -199,9 +237,6 @@ const paginatedProducts = computed(() => {
   return filteredProducts.value.slice(start, start + PAGE_SIZE)
 })
 
-/**
- * UI Helper Computed Properties
- */
 const hasActiveFilters = computed(() => {
   return (
     debouncedSearch.value !== '' ||
@@ -230,14 +265,11 @@ const emptyStateMessage = computed(() => {
 
 /**
  * Event Handlers
+ * (Giữ nguyên handlePageChange, resetFilters, handleAddToCart)
  */
 const handlePageChange = (page: number) => {
   currentPage.value = page
-  // Scroll to top of products
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  })
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const resetFilters = () => {
@@ -251,30 +283,18 @@ const resetFilters = () => {
 
 const handleAddToCart = (product: any) => {
   try {
-    // Get current cart from localStorage
     const cartData = localStorage.getItem('cart')
     const cart = cartData ? JSON.parse(cartData) : []
-
-    // Check if product already in cart
     const existingIndex = cart.findIndex((item: any) => item.id === product.id)
 
     if (existingIndex >= 0) {
-      // Increase quantity
       cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + 1
     } else {
-      // Add new product
-      cart.push({
-        ...product,
-        quantity: 1
-      })
+      cart.push({ ...product, quantity: 1 })
     }
 
-    // Save to localStorage
     localStorage.setItem('cart', JSON.stringify(cart))
-
-    // Trigger storage event for other components
     window.dispatchEvent(new Event('storage'))
-
     console.log('Đã thêm vào giỏ hàng:', product.name)
   } catch (error) {
     console.error('Lỗi khi thêm vào giỏ hàng:', error)
@@ -283,6 +303,7 @@ const handleAddToCart = (product: any) => {
 
 /**
  * Watchers
+ * (Giữ nguyên)
  */
 watch([debouncedSearch, category, priceRange, sortBy], () => {
   currentPage.value = 1
@@ -292,10 +313,11 @@ watch([debouncedSearch, category, priceRange, sortBy], () => {
  * Lifecycle
  */
 onMounted(() => {
-  // Simulate loading
-  setTimeout(() => {
-    isLoading.value = false
-  }, 500)
+  // [MODIFIED 5]: Gọi hàm lấy dữ liệu thật thay vì setTimeout giả lập
+  fetchProducts(); 
+  
+  // Bỏ đoạn code cũ này đi:
+  // setTimeout(() => { isLoading.value = false }, 500)
 })
 </script>
 
