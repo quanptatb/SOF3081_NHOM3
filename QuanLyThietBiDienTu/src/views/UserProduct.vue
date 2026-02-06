@@ -1,26 +1,36 @@
 <template>
   <div class="row mb-4">
     <div class="col-12">
-      <div id="headerCarousel" class="carousel slide shadow rounded-3 overflow-hidden" data-bs-ride="carousel"
-        data-bs-interval="5000">
-        <div class="carousel-indicators">
+      <div id="headerCarousel" class="carousel slide carousel-fade shadow-lg rounded-4 overflow-hidden"
+        data-bs-ride="carousel" data-bs-interval="4000">
+
+        <!-- Custom Indicators -->
+        <div class="carousel-indicators-custom">
           <button v-for="(banner, index) in banners" :key="banner.id" type="button" data-bs-target="#headerCarousel"
-            :data-bs-slide-to="index" :class="{ active: index === 0 }" aria-current="true"></button>
+            :data-bs-slide-to="index" :class="{ active: index === 0 }" :aria-label="`Slide ${index + 1}`"></button>
         </div>
 
         <div class="carousel-inner">
           <div v-for="(banner, index) in banners" :key="banner.id" class="carousel-item"
             :class="{ active: index === 0 }">
-            <img :src="banner.image" class="d-block w-100 banner-img" :alt="banner.alt">
+            <div class="banner-overlay"></div>
+            <img :src="banner.image" class="d-block w-100 banner-img" :alt="banner.alt" loading="lazy">
           </div>
         </div>
 
-        <button class="carousel-control-prev" type="button" data-bs-target="#headerCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon bg-dark rounded-circle bg-opacity-25 p-3" aria-hidden="true"></span>
+        <!-- Custom Control Buttons -->
+        <button class="carousel-control-prev custom-control" type="button" data-bs-target="#headerCarousel"
+          data-bs-slide="prev">
+          <div class="control-button">
+            <i class="bi bi-chevron-left"></i>
+          </div>
           <span class="visually-hidden">Previous</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#headerCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon bg-dark rounded-circle bg-opacity-25 p-3" aria-hidden="true"></span>
+        <button class="carousel-control-next custom-control" type="button" data-bs-target="#headerCarousel"
+          data-bs-slide="next">
+          <div class="control-button">
+            <i class="bi bi-chevron-right"></i>
+          </div>
           <span class="visually-hidden">Next</span>
         </button>
       </div>
@@ -34,7 +44,7 @@
 
       <div class="row g-3">
         <div v-for="p in paginatedProducts" :key="p.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
-          <router-link :to="`/productuser/${p.id}`" class="text-decoration-none h-100 d-block">
+          <router-link :to="`/productuser/${p.id}`" class="product-link text-decoration-none h-100 d-block">
             <div class="card product-card-tgdd h-100 p-2">
 
               <div class="product-img-wrap mb-2">
@@ -219,22 +229,47 @@ const paginatedProducts = computed(() => {
 }
 
 /* --- CARD SẢN PHẨM --- */
+.product-link {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .product-card-tgdd {
-  border: 1px solid #ced4da;
-  /* Viền xám đậm hơn chút */
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   background: #fff;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-/* Hover: Bóng đậm hơn & viền tím */
-.product-card-tgdd:hover {
-  transform: translateY(-5px);
-  border-color: #6f42c1;
-  box-shadow: 0 10px 30px rgba(111, 66, 193, 0.2) !important;
+.product-card-tgdd::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Hover: Bóng đậm hơn & viền gradient tím */
+.product-link:hover .product-card-tgdd {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(111, 66, 193, 0.25), 0 0 20px rgba(111, 66, 193, 0.1) !important;
+}
+
+.product-link:hover .product-card-tgdd::before {
+  opacity: 1;
 }
 
 .product-img-wrap {
@@ -253,12 +288,14 @@ const paginatedProducts = computed(() => {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  transition: transform 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 5px;
+  filter: brightness(1);
 }
 
-.product-card-tgdd:hover .product-img-wrap img {
-  transform: scale(1.08);
+.product-link:hover .product-img-wrap img {
+  transform: scale(1.12) rotate(2deg);
+  filter: brightness(1.05);
 }
 
 /* --- TÊN & GIÁ --- */
@@ -272,11 +309,12 @@ const paginatedProducts = computed(() => {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
 }
 
-.product-card-tgdd:hover .product-name {
+.product-link:hover .product-name {
   color: #6f42c1 !important;
+  transform: translateX(3px);
 }
 
 .price-main {
@@ -295,18 +333,25 @@ const paginatedProducts = computed(() => {
   padding: 3px;
   border-color: #ced4da !important;
   /* Viền icon đậm hơn */
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 
 .bank-icon-sm img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
 .bank-icon-sm:hover {
   border-color: #6f42c1 !important;
-  background-color: #f3f0ff;
+  background: linear-gradient(135deg, #f3f0ff 0%, #e8e0ff 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 8px rgba(111, 66, 193, 0.2);
+}
+
+.bank-icon-sm:hover img {
+  transform: scale(1.1);
 }
 
 /* --- PROMO TEXT --- */
@@ -330,82 +375,254 @@ const paginatedProducts = computed(() => {
 
 /* --- PAGINATION --- */
 .page-link {
-  border: 1px solid #ced4da;
+  border: 2px solid #e0e0e0;
   color: #333;
   margin: 0 4px;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   font-weight: 600;
-  min-width: 36px;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
 }
 
-.page-link:hover {
-  background-color: #e9ecef;
-  color: #6f42c1;
-  border-color: #6f42c1;
+.page-link:hover:not(.page-item.disabled .page-link) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
 }
 
 .page-item.active .page-link {
-  background-color: #6f42c1;
-  border-color: #6f42c1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
   color: #fff;
+  box-shadow: 0 4px 12px rgba(111, 66, 193, 0.4);
 }
 
-/* Sửa lại class này trong thẻ <style scoped> */
-.banner-img {
-  /* Giảm chiều cao xuống, bạn có thể thử 200px, 220px, 250px tùy mắt nhìn */
-  height: 530px;
+.page-item.disabled .page-link {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-  /* Giữ nguyên dòng này để ảnh tự cắt bớt phần thừa trên dưới, không bị méo */
+/* ============================================
+   CAROUSEL/SLIDER OPTIMIZATION
+   ============================================ */
+
+/* Carousel Container */
+#headerCarousel {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Fade Effect for Smooth Transitions */
+.carousel-fade .carousel-item {
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.carousel-fade .carousel-item.active {
+  opacity: 1;
+}
+
+/* Banner Image Styling */
+.banner-img {
+  height: 450px;
   object-fit: cover;
   object-position: center;
+  transition: transform 8s ease-out;
 }
 
-/* Ẩn nút prev/next khi chưa hover để nhìn gọn hơn (tùy chọn) */
-#headerCarousel .carousel-control-prev,
-#headerCarousel .carousel-control-next {
-  width: 5%;
+/* Subtle Ken Burns Effect */
+.carousel-item.active .banner-img {
+  animation: kenBurns 8s ease-out forwards;
+}
+
+@keyframes kenBurns {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.08);
+  }
+}
+
+/* Overlay Gradient for Better Text Readability */
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ---- CUSTOM CONTROL BUTTONS ---- */
+.custom-control {
+  width: 60px;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
 }
 
-#headerCarousel:hover .carousel-control-prev,
-#headerCarousel:hover .carousel-control-next {
+#headerCarousel:hover .custom-control {
   opacity: 1;
 }
 
-/* --- TÙY CHỈNH DẤU GẠCH NGANG CAROUSEL --- */
-
-/* 1. Định dạng chung cho các dấu gạch (trạng thái chưa chọn) */
-#headerCarousel .carousel-indicators button {
-  background-color: #690000 !important;
-  /* Màu đỏ thẫm (như ảnh 2) */
-  opacity: 0.6;
-  /* Độ mờ vừa phải */
-  height: 4px;
-  /* Độ dày */
-  width: 30px;
-  /* Chiều dài */
-  border: none;
-  /* Bỏ viền trắng mặc định */
-  border-radius: 2px;
-  /* Bo góc nhẹ cho mềm mại */
-  margin: 0 4px;
-  /* Khoảng cách giữa các gạch */
-  transition: all 0.3s ease;
-  /* Hiệu ứng chuyển màu mượt mà */
+.control-button {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(111, 66, 193, 0.2);
 }
 
-/* 2. Định dạng cho dấu gạch ĐANG CHỌN (Active) */
-#headerCarousel .carousel-indicators .active {
-  background-color: #ff0000 !important;
-  /* Màu đỏ tươi nổi bật */
-  opacity: 1;
-  /* Hiển thị rõ 100% */
-  width: 40px;
-  /* Dài hơn một chút để tạo điểm nhấn */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  /* Thêm bóng đổ nhẹ cho nổi */
+.control-button i {
+  font-size: 24px;
+  color: #6f42c1;
+  font-weight: bold;
+  transition: transform 0.3s ease;
+}
+
+.custom-control:hover .control-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(111, 66, 193, 0.4);
+  border-color: transparent;
+}
+
+.custom-control:hover .control-button i {
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Prev button animation */
+.carousel-control-prev:hover .control-button i {
+  animation: slideLeft 0.6s ease-in-out infinite;
+}
+
+/* Next button animation */
+.carousel-control-next:hover .control-button i {
+  animation: slideRight 0.6s ease-in-out infinite;
+}
+
+@keyframes slideLeft {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(-4px);
+  }
+}
+
+@keyframes slideRight {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+/* ---- CUSTOM INDICATORS ---- */
+.carousel-indicators-custom {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+}
+
+.carousel-indicators-custom button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel-indicators-custom button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-indicators-custom button.active {
+  width: 32px;
+  border-radius: 10px;
+  border-color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 0 15px rgba(111, 66, 193, 0.6);
+}
+
+.carousel-indicators-custom button:hover:not(.active) {
+  border-color: white;
+  transform: scale(1.3);
+}
+
+.carousel-indicators-custom button:hover:not(.active)::before {
+  transform: translate(-50%, -50%) scale(0.6);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .banner-img {
+    height: 300px;
+  }
+
+  .control-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .control-button i {
+    font-size: 20px;
+  }
+
+  .carousel-indicators-custom {
+    bottom: 15px;
+    padding: 8px 16px;
+  }
 }
 </style>
