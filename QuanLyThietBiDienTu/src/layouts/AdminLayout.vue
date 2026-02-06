@@ -1,75 +1,70 @@
 <template>
   <div class="admin-layout">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h5 class="sidebar-title">ADMIN PANEL</h5>
+        <router-link to="/admin" class="brand-link">
+          <div class="icon-box">
+            <i class="bi bi-shield-lock-fill text-purple"></i>
+          </div>
+          <h5 class="sidebar-title">ADMIN PANEL</h5>
+        </router-link>
       </div>
 
-      <nav class="sidebar-nav" aria-label="Admin navigation">
+      <nav class="sidebar-nav">
         <ul class="nav-list">
-          <!-- Management Section -->
-          <li class="nav-section-title" aria-label="Quản lý">Quản lý</li>
+          <li class="nav-section-title">Quản lý</li>
 
           <li v-for="item in managementMenu" :key="item.to" class="nav-item">
             <router-link 
               :to="item.to" 
               class="nav-link" 
               active-class="active"
-              :aria-label="item.label"
             >
-              <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+              <span class="nav-icon">{{ item.icon }}</span>
               <span class="nav-text">{{ item.label }}</span>
             </router-link>
           </li>
 
-          <!-- Shortcuts Section -->
-          <li class="nav-section-title nav-section-spacing" aria-label="Lối tắt">Lối tắt</li>
+          <li class="nav-section-title mt-3">Lối tắt</li>
 
           <li v-for="item in shortcutMenu" :key="item.to" class="nav-item">
             <router-link 
               :to="item.to" 
               class="nav-link"
-              :active-class="item.exact ? 'active' : ''"
-              :aria-label="item.label"
+              :active-class="item.exact !== false ? 'active' : ''"
             >
-              <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+              <span class="nav-icon">{{ item.icon }}</span>
               <span class="nav-text">{{ item.label }}</span>
             </router-link>
           </li>
         </ul>
       </nav>
 
-      <!-- User Profile -->
       <div class="sidebar-footer">
-        <div class="user-profile">
-          <div class="user-avatar" :aria-label="`Avatar of ${userDisplayName}`">
+        <div class="user-card">
+          <div class="user-avatar">
             {{ userInitial }}
           </div>
           <div class="user-info">
-            <small class="user-name">{{ userDisplayName }}</small>
-            <small class="user-status">● Online</small>
+            <span class="user-name">{{ userDisplayName }}</span>
+            <span class="user-role">Admin</span>
           </div>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
     <div class="main-container">
-      <!-- Header -->
       <header class="main-header">
-        <h5 class="header-title">Hệ thống quản trị</h5>
-        <button 
-          @click="handleLogout"
-          class="btn-logout"
-          aria-label="Đăng xuất"
-        >
+        <div class="d-flex align-items-center">
+          <h5 class="header-title mb-0">Hệ thống quản trị</h5>
+        </div>
+        
+        <button @click="handleLogout" class="btn-logout">
+          <i class="bi bi-box-arrow-right"></i>
           <span>Đăng xuất</span>
-          <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
         </button>
       </header>
 
-      <!-- Content -->
       <main class="main-content">
         <div class="content-wrapper">
           <slot />
@@ -86,29 +81,22 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const currentUser = ref(null);
 
-/**
- * Menu configuration - extracted for better maintainability
- */
+// Menu Configuration (LOGIC GIỮ NGUYÊN)
 const managementMenu = [
-  // { to: "/admin", icon: "📊", label: "Dashboard" },
-  { to: "/admin/users", icon: "👤", label: "Người dùng" },
+  { to: "/admin/users", icon: "👥", label: "Người dùng" },
   { to: "/admin/products", icon: "💻", label: "Thiết bị" },
 ];
 
 const shortcutMenu = [
-  { to: "/admin/Orders", icon: "📦", label: "Order" },
+  { to: "/admin/orders", icon: "📦", label: "Đơn hàng" },
   { to: "/", icon: "🛍️", label: "Xem Shop", exact: false },
 ];
 
-/**
- * Computed properties for better performance
- */
-const userDisplayName = computed(() => currentUser.value?.name || "Admin");
+// Computed
+const userDisplayName = computed(() => currentUser.value?.name || "Administrator");
 const userInitial = computed(() => userDisplayName.value.charAt(0).toUpperCase());
 
-/**
- * Load user data with error handling
- */
+// Lifecycle
 onMounted(() => {
   try {
     const stored = localStorage.getItem("currentUser");
@@ -120,116 +108,105 @@ onMounted(() => {
   }
 });
 
-/**
- * Handle logout with error handling
- */
+// Logout
 const handleLogout = () => {
   try {
     localStorage.removeItem("currentUser");
     router.push("/login");
   } catch (error) {
     console.error("Error during logout:", error);
-    // Still attempt to redirect even if localStorage fails
     router.push("/login");
   }
 };
 </script>
 
 <style scoped>
-/* CSS Custom Properties for theming */
-:root {
-  --sidebar-width: 250px;
-  --sidebar-bg: #1e1e2d;
-  --sidebar-text: #a2a3b7;
-  --sidebar-text-hover: #fff;
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
-  --sidebar-active-gradient: linear-gradient(90deg, #0d6efd 0%, #0056b3 100%);
-  --sidebar-active-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-  --avatar-size: 36px;
-  --transition-speed: 0.2s;
-  --transition-ease: ease-in-out;
-}
-
-/* Layout Container */
+/* 1. SIDEBAR STYLES (Đã sửa lỗi hiển thị) */
 .admin-layout {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background-color: #f8f9fa;
+  background-color: #f3f6f9;
 }
 
-/* Sidebar Styles */
 .sidebar {
-  width: var(--sidebar-width);
-  background: var(--sidebar-bg);
+  width: 260px;
+  /* Ép màu nền tím gradient */
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%) !important;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  color: white;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s var(--transition-ease);
+  color: white !important; /* Ép màu chữ trắng */
+  height: 100vh;
+  position: fixed; /* Cố định sidebar */
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 4px 0 10px rgba(0,0,0,0.1);
 }
 
 .sidebar-header {
-  padding: 1rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: white !important;
+}
+
+.icon-box {
+  width: 35px;
+  height: 35px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-purple { 
+  color: #6f42c1 !important; 
+  font-size: 1.2rem;
 }
 
 .sidebar-title {
   margin: 0;
-  font-weight: 700;
-  letter-spacing: 1px;
   font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: white;
 }
 
 /* Navigation */
 .sidebar-nav {
   flex: 1;
+  padding: 1.5rem 1rem;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding: 1rem 0;
-}
-
-/* Custom scrollbar */
-.sidebar-nav::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar-nav::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.nav-list {
-  list-style: none;
-  padding: 0 0.5rem;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
 }
 
 .nav-section-title {
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
   font-size: 0.75rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 700;
-  letter-spacing: 0.5px;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.25rem;
+  padding: 0 1rem;
+  margin-bottom: 0.5rem;
+  list-style: none;
 }
 
-.nav-section-spacing {
-  margin-top: 1rem;
+.nav-list {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .nav-item {
@@ -239,205 +216,144 @@ const handleLogout = () => {
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  color: var(--sidebar-text);
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.9) !important; /* Màu chữ menu */
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
   font-weight: 500;
-  transition: all var(--transition-speed) var(--transition-ease);
-  will-change: transform, background-color, color;
 }
 
 .nav-link:hover {
-  background: var(--sidebar-hover-bg);
-  color: var(--sidebar-text-hover);
-  transform: translateX(4px);
+  background: rgba(255, 255, 255, 0.2);
+  color: white !important;
+  transform: translateX(5px);
 }
 
+/* Active State */
 .nav-link.active {
-  background: var(--sidebar-active-gradient);
-  color: white;
-  box-shadow: var(--sidebar-active-shadow);
+  background: white !important;
+  color: #6f42c1 !important; /* Chữ tím khi active */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  font-weight: 700;
 }
 
 .nav-icon {
-  font-size: 1.125rem;
-  flex-shrink: 0;
+  margin-right: 12px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
 }
 
 .nav-text {
-  white-space: nowrap;
+  font-size: 0.95rem;
 }
 
-/* Sidebar Footer - User Profile */
+/* Footer User */
 .sidebar-footer {
-  padding: 1rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(255, 255, 255, 0.05);
 }
 
-.user-profile {
+.user-card {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 12px;
 }
 
 .user-avatar {
-  width: var(--avatar-size);
-  height: var(--avatar-size);
+  width: 42px;
+  height: 42px;
+  background: white;
+  color: #6f42c1;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  flex-shrink: 0;
+  font-weight: 800;
+  font-size: 1.1rem;
 }
 
 .user-info {
-  flex: 1;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
 }
 
 .user-name {
-  display: block;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  color: white;
 }
 
-.user-status {
-  color: #28a745;
-  font-size: 0.6875rem;
+.user-role {
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-top: 2px;
+  color: white;
 }
 
-/* Main Container */
+/* 2. MAIN CONTENT STYLES */
 .main-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  margin-left: 260px; /* Đẩy nội dung sang phải bằng chiều rộng sidebar */
+  height: 100vh;
   overflow: hidden;
 }
 
-/* Header */
 .main-header {
+  height: 70px;
   background: white;
-  border-bottom: 1px solid #dee2e6;
-  padding: 1rem 1.5rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  z-index: 10;
+  justify-content: space-between;
+  padding: 0 2rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  z-index: 90;
 }
 
 .header-title {
-  margin: 0;
+  color: #4b5563;
   font-weight: 700;
-  color: #6c757d;
-  font-size: 1.125rem;
 }
 
 .btn-logout {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.875rem;
-  font-size: 0.875rem;
-  border: 1px solid #dc3545;
-  background: transparent;
+  background: #fff5f5;
   color: #dc3545;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  transition: all var(--transition-speed) var(--transition-ease);
-  font-weight: 500;
+  border: 1px solid #ffcccc;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
 }
 
 .btn-logout:hover {
   background: #dc3545;
   color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  border-color: #dc3545;
 }
 
-.btn-logout:active {
-  transform: translateY(0);
-}
-
-/* Main Content */
 .main-content {
   flex: 1;
-  padding: 1.5rem;
-  background: #f8f9fa;
+  padding: 2rem;
   overflow-y: auto;
+  background-color: #f8f9fa;
 }
 
-.content-wrapper {
-  max-width: 100%;
-  animation: fadeIn 0.4s ease-out;
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
 }
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .admin-layout {
-    --sidebar-width: 200px;
-  }
-  
-  .sidebar-title {
-    font-size: 0.95rem;
-  }
-  
-  .nav-text {
-    font-size: 0.875rem;
-  }
-  
-  .main-header {
-    padding: 0.75rem 1rem;
-  }
-  
-  .main-content {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .admin-layout {
-    --sidebar-width: 60px;
-  }
-  
-  .sidebar-title,
-  .nav-text,
-  .user-name,
-  .user-status {
-    display: none;
-  }
-  
-  .nav-link {
-    justify-content: center;
-    padding: 0.75rem;
-  }
-  
-  .user-info {
-    display: none;
-  }
+::-webkit-scrollbar-thumb {
+  background: #c4c4c4;
+  border-radius: 3px;
 }
 </style>

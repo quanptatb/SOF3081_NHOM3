@@ -30,25 +30,27 @@
 </div>
     <div class="row">
       <div class="col-12">
-        <p class="small text-muted mb-3" v-if="search">
-          Tìm thấy <b>{{ filteredProducts.length }}</b> sản phẩm phù hợp
+        <p class="small fw-bold text-dark mb-3" v-if="search">
+          Tìm thấy <span class="text-purple">{{ filteredProducts.length }}</span> sản phẩm phù hợp
         </p>
 
         <div class="row g-3">
           <div v-for="p in paginatedProducts" :key="p.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
             <router-link :to="`/productuser/${p.id}`" class="text-decoration-none h-100 d-block">
-              <div class="card product-card-tgdd h-100 border-0 shadow-sm p-2">
+              <div class="card product-card-tgdd h-100 p-2">
+                
                 <div class="product-img-wrap mb-2">
                   <img :src="p.image" class="img-fluid" loading="lazy" />
                 </div>
-                <div class="card-body p-1">
-                  <h6 class="product-name text-dark mb-2">{{ p.name }}</h6>
-                  <div class="price-box mb-2">
-                    <span class="text-dark fw-bold d-block fs-5">{{ formatPrice(p.price) }}</span>
-                    <div class="d-flex align-items-center gap-2">
-                      <span class="text-muted text-decoration-line-through x-small">{{ formatPrice(p.price * 1.2)
-                        }}</span>
-                      <span class="text-danger fw-bold x-small">-20%</span>
+
+                <div class="card-body p-1 d-flex flex-column">
+                  <h6 class="product-name text-black mb-2">{{ p.name }}</h6>
+                  
+                  <div class="price-box mb-3">
+                    <span class="text-purple fw-bolder d-block price-main">{{ formatPrice(p.price) }}</span>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                      <span class="text-secondary text-decoration-line-through x-small fw-semibold">{{ formatPrice(p.price * 1.2) }}</span>
+                      <span class="badge bg-danger rounded-pill x-small">-20%</span>
                     </div>
                   </div>
 
@@ -60,7 +62,7 @@
                       </div>
                     </div>
                     <div class="promo-text-holder">
-                      <p class="promo-text-limit text-primary mb-0 animate__animated animate__fadeIn">
+                      <p class="promo-text-limit text-purple fw-bold mb-0 animate__animated animate__fadeIn">
                         {{ p.hoveredPromo || 'Rê chuột xem ưu đãi bank' }}
                       </p>
                     </div>
@@ -72,13 +74,20 @@
         </div>
 
         <nav class="mt-5" v-if="totalPages > 1">
-          <ul class="pagination pagination-sm justify-content-center">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }"><button class="page-link"
-                @click="currentPage--">«</button></li>
+          <ul class="pagination justify-content-center">
+            <li class="page-item" :class="{ disabled: currentPage === 1 }">
+              <button class="page-link shadow-sm" @click="currentPage--">
+                <i class="bi bi-chevron-left"></i> «
+              </button>
+            </li>
             <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
-              <button class="page-link" @click="currentPage = page">{{ page }}</button></li>
-            <li class="page-item" :class="{ disabled: currentPage === totalPages }"><button class="page-link"
-                @click="currentPage++">»</button></li>
+              <button class="page-link shadow-sm fw-bold" @click="currentPage = page">{{ page }}</button>
+            </li>
+            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+              <button class="page-link shadow-sm" @click="currentPage++">
+                » <i class="bi bi-chevron-right"></i>
+              </button>
+            </li>
           </ul>
         </nav>
       </div>
@@ -116,7 +125,6 @@ onUnmounted(() => {
   window.removeEventListener('nav-search-filter', handleNavbarFilter);
 });
 
-// (Dữ liệu banks và products giữ nguyên như code cũ của bạn bên dưới)
 const banks = [
   { id: 'scb', logo: '/src/assets/images/scb.png', detail: 'Giảm ngay 800.000đ cho đơn từ 8 triệu khi thanh toán qua thẻ Visa SCB. (HSD: 30/06/2026)' },
   { id: 'ocb', logo: '/src/assets/images/ocb.png', detail: 'Giảm ngay 500.000đ cho đơn hàng từ 10 triệu khi thanh toán bằng thẻ OCB. (HSD: 28/02/2026)' },
@@ -140,7 +148,6 @@ const loadProducts = async () => {
   isLoading.value = true;
   try {
     const response = await axios.get(PRODUCTS_API_URL);
-    // Add hoveredPromo field for bank promotion hover effect
     products.value = response.data.map(p => ({ ...p, hoveredPromo: '' }));
   } catch (error) {
     console.error('Error loading products:', error);
@@ -172,15 +179,9 @@ const paginatedProducts = computed(() => {
 </script>
 
 <style scoped>
-.product-card-tgdd {
-  border-radius: 12px;
-  transition: 0.3s;
-  background: #fff;
-}
-
-.product-card-tgdd:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+/* --- TEXT & COLORS --- */
+.text-purple {
+  color: #6f42c1 !important;
 }
 
 .product-img-wrap {
@@ -218,14 +219,9 @@ const paginatedProducts = computed(() => {
   -webkit-box-orient: vertical;
 }
 
-.promo-text-holder {
-  min-height: 2.4rem;
-  display: flex;
-  align-items: center;
-}
-
-
+/* --- CARD SẢN PHẨM --- */
 .product-card-tgdd {
+  border: 1px solid #ced4da; /* Viền xám đậm hơn chút */
   border-radius: 12px;
   transition: all 0.3s ease;
   background: #fff;
@@ -234,9 +230,11 @@ const paginatedProducts = computed(() => {
   flex-direction: column;
 }
 
+/* Hover: Bóng đậm hơn & viền tím */
 .product-card-tgdd:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+  border-color: #6f42c1;
+  box-shadow: 0 10px 30px rgba(111, 66, 193, 0.2) !important;
 }
 
 .product-img-wrap {
@@ -245,8 +243,9 @@ const paginatedProducts = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 15px;
+  padding: 10px;
   background: #fff;
+  border-bottom: 1px solid #e9ecef; /* Đường kẻ dưới ảnh */
 }
 
 .product-img-wrap img {
@@ -254,16 +253,17 @@ const paginatedProducts = computed(() => {
   max-height: 100%;
   object-fit: contain;
   transition: transform 0.3s ease;
+  padding: 5px;
 }
 
 .product-card-tgdd:hover .product-img-wrap img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
-/* --- THÔNG TIN TÊN & GIÁ --- */
+/* --- TÊN & GIÁ --- */
 .product-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px; 
+  font-weight: 700; 
   height: 2.8rem;
   line-height: 1.4rem;
   overflow: hidden;
@@ -271,74 +271,82 @@ const paginatedProducts = computed(() => {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  color: #333;
+  transition: color 0.3s;
 }
 
-.price-box .fs-5 {
-  font-size: 1.1rem !important;
+.product-card-tgdd:hover .product-name {
+  color: #6f42c1 !important;
 }
 
-/* --- FIX LỖI BOX NGÂN HÀNG --- */
+.price-main {
+  font-size: 1.2rem !important;
+}
+
+/* --- BANK ICON --- */
 .bank-icon-sm {
-  width: 38px;
-  /* Cố định độ rộng */
-  height: 24px;
-  /* Cố định độ cao */
+  width: 40px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
   cursor: pointer;
-  padding: 2px;
-  overflow: hidden;
-  flex-shrink: 0;
-  /* Không cho phép co lại */
+  padding: 3px;
+  border-color: #ced4da !important; /* Viền icon đậm hơn */
+  transition: all 0.2s;
 }
 
 .bank-icon-sm img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* Logo bank luôn nằm gọn trong ô */
 }
 
 .bank-icon-sm:hover {
-  border-color: #2f80ed !important;
+  border-color: #6f42c1 !important;
+  background-color: #f3f0ff;
 }
 
-/* --- FIX LỖI TEXT ƯU ĐÃI (DẤU 3 CHẤM) --- */
+/* --- PROMO TEXT --- */
 .promo-text-holder {
   min-height: 2.4rem;
-  /* Giữ chỗ để card không bị nhảy khi hover */
   display: flex;
   align-items: center;
   margin-top: 5px;
 }
 
 .promo-text-limit {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.2rem;
   height: 2.4rem;
-  /* Đúng bằng 2 dòng */
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  text-overflow: ellipsis;
-  word-break: break-word;
 }
 
-/* Pagination tinh chỉnh */
+/* --- PAGINATION --- */
 .page-link {
-  border: none;
+  border: 1px solid #ced4da;
   color: #333;
-  margin: 0 2px;
-  border-radius: 4px !important;
+  margin: 0 4px;
+  border-radius: 8px !important;
+  font-weight: 600;
+  min-width: 36px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.page-link:hover {
+  background-color: #e9ecef;
+  color: #6f42c1;
+  border-color: #6f42c1;
 }
 
 .page-item.active .page-link {
-  background-color: #2f80ed;
+  background-color: #6f42c1;
+  border-color: #6f42c1;
   color: #fff;
 }
 

@@ -1,101 +1,107 @@
 <template>
   <div class="auth-page">
-    <div class="auth-container">
-      <!-- Left Side - Illustration -->
-      <div class="auth-illustration">
-        <div class="illustration-content">
-          <div class="logo">
-            <i class="bi bi-shop" aria-hidden="true"></i>
-          </div>
-          <h2>Chào mừng trở lại!</h2>
-          <p>Đăng nhập để tiếp tục mua sắm các sản phẩm công nghệ tuyệt vời</p>
-          <div class="features">
-            <div class="feature-item">
-              <i class="bi bi-shield-check" aria-hidden="true"></i>
-              <span>Bảo mật cao</span>
-            </div>
-            <div class="feature-item">
-              <i class="bi bi-lightning-fill" aria-hidden="true"></i>
-              <span>Giao dịch nhanh</span>
-            </div>
-            <div class="feature-item">
-              <i class="bi bi-award" aria-hidden="true"></i>
-              <span>Uy tín đáng tin</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Side - Login Form -->
-      <div class="auth-form-container">
-        <div class="auth-form">
-          <h1 class="form-title">Đăng nhập</h1>
-          <p class="form-subtitle">Nhập thông tin để truy cập tài khoản</p>
-
-          <form @submit.prevent="handleLogin" novalidate>
-            <!-- Email Field -->
-            <div class="form-group">
-              <label for="email" class="form-label">
-                Email <span class="required">*</span>
-              </label>
-              <div class="input-wrapper">
-                <i class="bi bi-envelope input-icon" aria-hidden="true"></i>
-                <input id="email" v-model="email" type="email" class="form-input" :class="{ 'invalid': errors.email }"
-                  placeholder="example@email.com" @blur="validateField('email')" @input="clearError('email')"
-                  autocomplete="email" />
+    <div class="container">
+      <div class="row justify-content-center align-items-center h-100">
+        <div class="col-xl-10">
+          <div class="card border-0 shadow-lg overflow-hidden rounded-4">
+            <div class="row g-0">
+              
+              <div class="col-lg-6 d-none d-lg-block bg-login-image">
+                <div class="h-100 d-flex flex-column justify-content-center align-items-center text-white p-5 text-center overlay-content">
+                  <div class="mb-4 icon-box">
+                    <i class="bi bi-shop display-4"></i>
+                  </div>
+                  <h2 class="fw-bold mb-3">Chào mừng trở lại!</h2>
+                  <p class="lead opacity-75">Kết nối và khám phá thế giới công nghệ cùng cộng đồng của chúng tôi.</p>
+                </div>
               </div>
-              <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
-            </div>
 
-            <!-- Password Field -->
-            <div class="form-group">
-              <label for="password" class="form-label">
-                Mật khẩu <span class="required">*</span>
-              </label>
-              <div class="input-wrapper">
-                <i class="bi bi-lock input-icon" aria-hidden="true"></i>
-                <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" class="form-input"
-                  :class="{ 'invalid': errors.password }" placeholder="Nhập mật khẩu" @blur="validateField('password')"
-                  @input="clearError('password')" autocomplete="current-password" />
-                <button type="button" class="password-toggle" @click="showPassword = !showPassword"
-                  :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
-                  <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" aria-hidden="true"></i>
-                </button>
+              <div class="col-lg-6">
+                <div class="p-5">
+                  <div class="text-center mb-5">
+                    <h2 class="fw-bold text-dark">Đăng nhập</h2>
+                    <p class="text-muted">Nhập thông tin để truy cập tài khoản</p>
+                  </div>
+
+                  <form @submit.prevent="handleLogin" novalidate>
+                    
+                    <div class="form-floating mb-3">
+                      <input 
+                        type="email" 
+                        class="form-control" 
+                        id="floatingEmail" 
+                        placeholder="name@example.com"
+                        v-model="email"
+                        :class="{ 'is-invalid': errors.email }"
+                        @input="clearError('email')"
+                      >
+                      <label for="floatingEmail"><i class="bi bi-envelope me-2"></i>Email</label>
+                      <div class="invalid-feedback text-start">{{ errors.email }}</div>
+                    </div>
+
+                    <div class="form-floating mb-3 position-relative">
+                      <input 
+                        :type="showPassword ? 'text' : 'password'" 
+                        class="form-control" 
+                        id="floatingPassword" 
+                        placeholder="Password"
+                        v-model="password"
+                        :class="{ 'is-invalid': errors.password }"
+                        @input="clearError('password')"
+                      >
+                      <label for="floatingPassword"><i class="bi bi-lock me-2"></i>Mật khẩu</label>
+                      
+                      <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" 
+                            @click="showPassword = !showPassword"
+                            style="cursor: pointer; z-index: 10;">
+                        <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-muted"></i>
+                      </span>
+                      <div class="invalid-feedback text-start">{{ errors.password }}</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="rememberMe">
+                        <label class="form-check-label text-muted small" for="rememberMe">
+                          Ghi nhớ đăng nhập
+                        </label>
+                      </div>
+                      <a href="#" class="text-decoration-none small text-purple fw-bold">Quên mật khẩu?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-purple w-100 py-3 fw-bold shadow-sm mb-4" :disabled="isLoading">
+                      <span v-if="!isLoading">Đăng nhập</span>
+                      <span v-else>
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Đang xử lý...
+                      </span>
+                    </button>
+
+                    <div class="position-relative mb-4">
+                      <hr class="text-muted opacity-25">
+                      <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
+                        hoặc đăng nhập với
+                      </span>
+                    </div>
+
+                    <button @click="handleGoogleLogin" type="button" class="btn btn-light-google w-100 py-2 border d-flex align-items-center justify-content-center mb-4" :disabled="isLoadingGoogle">
+                      <svg class="me-2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                        <path fill="#1976D2" d="M43.611,20.083L43.611,20.083c-0.251-1.267-0.389-2.576-0.389-3.917h-1.611H24v8h11.303c-0.814,2.298-2.316,4.244-4.113,5.762l6.19,5.238C41.332,31.424,44,26.16,44,20.083z"/>
+                      </svg>
+                      <span class="fw-medium text-secondary">Google</span>
+                    </button>
+
+                    <div class="text-center">
+                      <span class="text-muted">Chưa có tài khoản? </span>
+                      <router-link to="/register" class="text-purple fw-bold text-decoration-none">Đăng ký ngay</router-link>
+                    </div>
+                  </form>
+                </div>
               </div>
-              <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
             </div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn-submit" :disabled="isLoading">
-              <span v-if="!isLoading">
-                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                Đăng nhập
-              </span>
-              <span v-else>
-                <i class="bi bi-arrow-repeat spinning" aria-hidden="true"></i>
-                Đang xử lý...
-              </span>
-            </button>
-          </form>
-
-          <!-- Divider -->
-          <div class="divider">
-            <span>hoặc</span>
-          </div>
-
-          <!-- Google Login Button -->
-          <button @click="handleGoogleLogin" type="button" class="btn-google" :disabled="isLoadingGoogle">
-            <i class="bi bi-google" aria-hidden="true"></i>
-            <span v-if="!isLoadingGoogle">Đăng nhập với Google</span>
-            <span v-else>Đang xử lý...</span>
-          </button>
-
-          <!-- Register Link -->
-          <div class="auth-footer">
-            <p>Chưa có tài khoản?</p>
-            <router-link to="/register" class="link-secondary">
-              Đăng ký ngay
-            </router-link>
           </div>
         </div>
       </div>
@@ -110,170 +116,97 @@ import { toast } from "../../composables/useToast";
 import { useGoogleAuth } from "../../composables/useGoogleAuth";
 import axios from "axios";
 
-/**
- * API Configuration
- */
-const API_URL = 'http://localhost:3000/users'
-
-/**
- * Router
- */
+// --- API & ROUTER SETUP ---
+const API_URL = 'http://localhost:3000/users';
 const router = useRouter();
+const { signInWithGoogle } = useGoogleAuth();
 
-/**
- * State
- */
-const email = ref('')
-const password = ref('')
-const showPassword = ref(false)
-const isLoading = ref(false)
-const isLoadingGoogle = ref(false)
-const errors = ref<{ email?: string; password?: string }>({})
+// --- STATE MANAGEMENT ---
+const email = ref('');
+const password = ref('');
+const showPassword = ref(false);
+const isLoading = ref(false);
+const isLoadingGoogle = ref(false);
+const errors = ref<{ email?: string; password?: string }>({});
 
-const { signInWithGoogle } = useGoogleAuth()
-
-/**
- * Validation
- */
-const validateEmail = (): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-  if (!email.value.trim()) {
-    errors.value.email = 'Vui lòng nhập email'
-    return false
-  }
-
-  if (!emailRegex.test(email.value)) {
-    errors.value.email = 'Email không hợp lệ'
-    return false
-  }
-
-  delete errors.value.email
-  return true
-}
-
-const validatePassword = (): boolean => {
-  if (!password.value) {
-    errors.value.password = 'Vui lòng nhập mật khẩu'
-    return false
-  }
-
-  if (password.value.length < 3) {
-    errors.value.password = 'Mật khẩu phải có ít nhất 3 ký tự'
-    return false
-  }
-
-  delete errors.value.password
-  return true
-}
-
-const validateField = (field: 'email' | 'password') => {
-  if (field === 'email') return validateEmail()
-  if (field === 'password') return validatePassword()
-  return true
-}
-
-const clearError = (field: 'email' | 'password') => {
-  delete errors.value[field]
-}
-
+// --- VALIDATION LOGIC ---
 const validateForm = (): boolean => {
-  const emailValid = validateEmail()
-  const passwordValid = validatePassword()
-  return emailValid && passwordValid
-}
+  let isValid = true;
+  errors.value = {}; // Reset errors
 
-/**
- * Handle Login (API Version)
- */
-const handleLogin = async () => {
-  // Validate form
-  if (!validateForm()) {
-    toast().warning("Vui lòng kiểm tra lại thông tin");
-    return;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email.value.trim()) {
+    errors.value.email = 'Vui lòng nhập email của bạn';
+    isValid = false;
+  } else if (!emailRegex.test(email.value)) {
+    errors.value.email = 'Email không đúng định dạng';
+    isValid = false;
   }
+
+  if (!password.value) {
+    errors.value.password = 'Vui lòng nhập mật khẩu';
+    isValid = false;
+  } else if (password.value.length < 3) {
+    errors.value.password = 'Mật khẩu quá ngắn';
+    isValid = false;
+  }
+
+  return isValid;
+};
+
+const clearError = (field: 'email' | 'password') => delete errors.value[field];
+
+// --- LOGIN HANDLER ---
+const handleLogin = async () => {
+  if (!validateForm()) return;
 
   isLoading.value = true;
-
   try {
-    // Fetch user from API by email
-    const response = await axios.get(`${API_URL}?email=${email.value}`);
+    // Gọi API kiểm tra user
+    const { data } = await axios.get(`${API_URL}?email=${email.value}`);
+    const user = data[0];
 
-    // Find user in response
-    const targetUser = response.data && response.data.length > 0 ? response.data[0] : null;
-
-    // --- BẮT ĐẦU KIỂM TRA TÀI KHOẢN ---
-
-    if (!targetUser) {
-      // Trường hợp 1: Không tìm thấy Email -> Báo lỗi "Tài khoản không tồn tại"
-      toast().error(
-        "Tài khoản chưa tồn tại trên hệ thống",
-        "❌ Đăng nhập thất bại"
-      );
-      errors.value.email = "Tài khoản chưa được đăng ký"; // Hiển thị lỗi đỏ ngay dưới ô input
-    }
-    else if (targetUser.password !== password.value) {
-      // Trường hợp 2: Có Email nhưng sai Password -> Báo lỗi "Sai mật khẩu"
-      toast().error(
-        "Mật khẩu không chính xác",
-        "❌ Đăng nhập thất bại"
-      );
-      errors.value.password = "Mật khẩu không đúng"; // Hiển thị lỗi đỏ ngay dưới ô input
-    }
-    else {
-      // Trường hợp 3: Đúng cả 2 -> Đăng nhập thành công
-      localStorage.setItem("currentUser", JSON.stringify(targetUser));
-
-      toast().success(`Chào mừng ${targetUser.name}!`, "✅ Đăng nhập thành công");
-
-      // Chuyển trang
+    if (!user) {
+      errors.value.email = 'Email này chưa được đăng ký';
+      toast().error('Tài khoản không tồn tại', 'Đăng nhập thất bại');
+    } else if (user.password !== password.value) {
+      errors.value.password = 'Mật khẩu không chính xác';
+      toast().error('Sai mật khẩu', 'Đăng nhập thất bại');
+    } else {
+      // Thành công
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      toast().success(`Chào mừng quay lại, ${user.name}!`);
+      
+      // Delay nhẹ để người dùng thấy thông báo
       setTimeout(() => {
-        if (targetUser.role === "admin") {
-          router.push("/admin/users");
-        } else {
-          router.push("/");
-        }
-      }, 500);
+        router.push(user.role === "admin" ? "/admin/users" : "/");
+      }, 800);
     }
-    // --- KẾT THÚC KIỂM TRA ---
-
-  } catch (error) {
-    console.error("Login error:", error);
-    toast().error("Không thể kết nối đến server. Vui lòng thử lại!");
+  } catch (err) {
+    console.error(err);
+    toast().error("Lỗi kết nối server!");
   } finally {
     isLoading.value = false;
   }
 };
 
-/**
- * Handle Google Login
- */
+// --- GOOGLE LOGIN HANDLER ---
 const handleGoogleLogin = async () => {
   isLoadingGoogle.value = true;
-
   try {
     const result = await signInWithGoogle();
-
     if (result.success && result.user) {
-      // Save user to localStorage
       localStorage.setItem("currentUser", JSON.stringify(result.user));
-
-      toast().success(`Chào mừng ${result.user.name}!`, "✅ Đăng nhập thành công");
-
-      // Redirect based on role
+      toast().success(`Chào mừng ${result.user.name}!`);
       setTimeout(() => {
-        if (result.user.role === "admin") {
-          router.push("/admin/users");
-        } else {
-          router.push("/");
-        }
-      }, 500);
+        router.push(result.user.role === "admin" ? "/admin/users" : "/");
+      }, 800);
     } else {
-      toast().error(result.error || "Đăng nhập thất bại", "❌ Lỗi");
+      toast().error("Đăng nhập Google thất bại");
     }
-  } catch (error) {
-    console.error("Google login error:", error);
-    toast().error("Không thể đăng nhập với Google");
+  } catch (err) {
+    console.error(err);
+    toast().error("Lỗi hệ thống");
   } finally {
     isLoadingGoogle.value = false;
   }
@@ -281,363 +214,83 @@ const handleGoogleLogin = async () => {
 </script>
 
 <style scoped>
-/* CSS Custom Properties */
-:root {
-  --primary-color: #0d6efd;
-  --primary-hover: #0a58ca;
-  --success-color: #28a745;
-  --danger-color: #dc3545;
-  --light-color: #f8f9fa;
-  --dark-color: #212529;
-  --border-color: #dee2e6;
-  --text-muted: #6c757d;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --border-radius: 12px;
-}
-
-/* Page Layout */
+/* BACKGROUND TÍM GRADIENT */
 .auth-page {
   min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem 1rem;
+  padding: 2rem 0;
 }
 
-.auth-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  max-width: 1000px;
-  width: 100%;
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-  animation: slideIn 0.5s ease-out;
+/* CỘT ẢNH BÊN TRÁI */
+.bg-login-image {
+  background: url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center center/cover no-repeat;
+  position: relative;
+}
+/* Lớp phủ màu tím lên ảnh */
+.bg-login-image::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(to bottom right, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+}
+.overlay-content {
+  position: relative; /* Để nổi lên trên lớp phủ */
+  z-index: 1;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* CUSTOM INPUTS */
+.form-floating > .form-control:focus {
+  border-color: #6f42c1;
+  box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.15);
+}
+.form-floating > label {
+  color: #6c757d;
 }
 
-/* Illustration Side */
-.auth-illustration {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* MÀU TÍM CUSTOM */
+.text-purple {
+  color: #6f42c1 !important;
+  transition: color 0.3s;
+}
+.text-purple:hover {
+  color: #5a32a3 !important;
+}
+
+/* BUTTONS */
+.btn-purple {
+  background-color: #6f42c1;
+  border-color: #6f42c1;
   color: white;
+  transition: all 0.3s ease;
+  border-radius: 0.5rem; /* Bo tròn nút */
+}
+.btn-purple:hover {
+  background-color: #5a32a3;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(111, 66, 193, 0.3);
 }
 
-.illustration-content {
-  text-align: center;
+.btn-light-google {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  transition: all 0.3s;
+}
+.btn-light-google:hover {
+  background-color: #e9ecef;
+  transform: translateY(-2px);
 }
 
-.logo {
+/* ICON BOX */
+.icon-box {
   width: 80px;
   height: 80px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 2rem;
-  font-size: 2.5rem;
-  backdrop-filter: blur(10px);
-}
-
-.illustration-content h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-}
-
-.illustration-content p {
-  font-size: 1.125rem;
-  opacity: 0.9;
-  margin: 0 0 2rem;
-}
-
-.features {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  text-align: left;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-}
-
-.feature-item i {
-  font-size: 1.5rem;
-}
-
-/* Form Side */
-.auth-form-container {
-  padding: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth-form {
-  width: 100%;
-  max-width: 400px;
-}
-
-.form-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--dark-color);
-  margin: 0 0 0.5rem;
-}
-
-.form-subtitle {
-  color: var(--text-muted);
-  margin: 0 0 2rem;
-}
-
-/* Form Groups */
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--dark-color);
-}
-
-.required {
-  color: var(--danger-color);
-}
-
-.input-wrapper {
-  position: relative;
-}
-
-.input-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: 1.125rem;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.875rem 1rem 0.875rem 3rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.form-input.invalid {
-  border-color: var(--danger-color);
-}
-
-.password-toggle {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.25rem;
-  font-size: 1.125rem;
-  transition: color 0.3s ease;
-}
-
-.password-toggle:hover {
-  color: var(--primary-color);
-}
-
-.error-message {
-  display: block;
-  color: var(--danger-color);
-  font-size: 0.875rem;
-  margin-top: 0.375rem;
-}
-
-/* Submit Button */
-.btn-submit {
-  width: 100%;
-  padding: 1rem;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 2rem;
-}
-
-.btn-submit:hover:not(:disabled) {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.spinning {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Divider */
-.divider {
-  position: relative;
-  text-align: center;
-  margin: 2rem 0;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-.divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--border-color);
-}
-
-.divider span {
-  position: relative;
-  background: white;
-  padding: 0 1rem;
-}
-
-/* Footer Links */
-.auth-footer {
-  text-align: center;
-}
-
-.auth-footer p {
-  color: var(--text-muted);
-  margin: 0 0 0.5rem;
-}
-
-.link-secondary {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.link-secondary:hover {
-  color: var(--primary-hover);
-  text-decoration: underline;
-}
-
-/* Google Button */
-.btn-google {
-  width: 100%;
-  padding: 1rem;
-  background: white;
-  color: var(--dark-color);
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.btn-google:hover:not(:disabled) {
-  border-color: var(--primary-color);
-  background: rgba(13, 110, 253, 0.05);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-google:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-google i {
-  font-size: 1.25rem;
-  color: #DB4437;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .auth-container {
-    grid-template-columns: 1fr;
-  }
-
-  .auth-illustration {
-    display: none;
-  }
-
-  .auth-form-container {
-    padding: 2rem 1.5rem;
-  }
-
-  .form-title {
-    font-size: 1.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .auth-page {
-    padding: 1rem 0.5rem;
-  }
-
-  .auth-form-container {
-    padding: 1.5rem 1rem;
-  }
+  backdrop-filter: blur(5px);
 }
 </style>
