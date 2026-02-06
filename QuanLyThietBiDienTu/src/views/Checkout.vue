@@ -1,10 +1,9 @@
 <template>
   <div class="checkout-page">
     <div class="checkout-container">
-      <!-- Header -->
       <div class="checkout-header">
         <h1 class="checkout-title">
-          <i class="bi bi-credit-card" aria-hidden="true"></i>
+          <i class="bi bi-credit-card-2-front-fill text-purple"></i>
           Thanh toán
         </h1>
         <p class="checkout-subtitle">
@@ -12,13 +11,11 @@
         </p>
       </div>
 
-      <!-- Loading State -->
       <div v-if="isLoading" class="loading-state">
         <div class="spinner"></div>
         <p>Đang tải thông tin...</p>
       </div>
 
-      <!-- Empty Cart Redirect -->
       <div v-else-if="cartItems.length === 0" class="empty-checkout">
         <div class="empty-icon">
           <i class="bi bi-cart-x" aria-hidden="true"></i>
@@ -33,150 +30,183 @@
         </router-link>
       </div>
 
-      <!-- Checkout Form -->
       <form v-else @submit.prevent="handleSubmit" class="checkout-form" novalidate>
         <div class="form-grid">
-          <!-- Customer Information Section -->
-          <div class="form-section">
-            <h2 class="section-title">
-              <i class="bi bi-person" aria-hidden="true"></i>
+          <div class="form-section shadow-sm border-0">
+            <h2 class="section-title text-purple">
+              <i class="bi bi-person-vcard-fill me-2"></i>
               Thông tin người nhận
             </h2>
 
-            <div class="form-group">
-              <label for="fullname" class="form-label">
-                Họ và tên <span class="required">*</span>
-              </label>
-              <input id="fullname" v-model="formData.name" type="text" class="form-input"
-                :class="{ 'invalid': errors.name }" placeholder="Nguyễn Văn A" @blur="validateField('name')"
-                @input="clearError('name')" aria-required="true" />
+            <div class="form-group mb-4">
+              <label for="fullname" class="form-label fw-bold">Họ và tên <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="bi bi-person"></i></span>
+                <input 
+                  id="fullname" 
+                  v-model="formData.name" 
+                  type="text" 
+                  class="form-control custom-input"
+                  :class="{ 'is-invalid': errors.name }" 
+                  placeholder="Nguyễn Văn A" 
+                  @blur="validateField('name')"
+                  @input="clearError('name')" 
+                  aria-required="true" 
+                />
+              </div>
               <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
             </div>
 
-            <div class="form-group">
-              <label for="phone" class="form-label">
-                Số điện thoại <span class="required">*</span>
-              </label>
-              <input id="phone" v-model="formData.phone" type="tel" class="form-input"
-                :class="{ 'invalid': errors.phone }" placeholder="0912345678" @blur="validateField('phone')"
-                @input="clearError('phone')" aria-required="true" />
+            <div class="form-group mb-4">
+              <label for="phone" class="form-label fw-bold">Số điện thoại <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <span class="input-icon"><i class="bi bi-telephone"></i></span>
+                <input 
+                  id="phone" 
+                  v-model="formData.phone" 
+                  type="tel" 
+                  class="form-control custom-input"
+                  :class="{ 'is-invalid': errors.phone }" 
+                  placeholder="0912345678" 
+                  @blur="validateField('phone')"
+                  @input="clearError('phone')" 
+                  aria-required="true" 
+                />
+              </div>
               <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
             </div>
 
-            <div class="form-group">
-              <label for="address" class="form-label">
-                Địa chỉ giao hàng <span class="required">*</span>
-              </label>
-              <textarea id="address" v-model="formData.address" class="form-textarea"
-                :class="{ 'invalid': errors.address }" rows="3"
-                placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" @blur="validateField('address')"
-                @input="clearError('address')" aria-required="true"></textarea>
+            <div class="form-group mb-4">
+              <label for="address" class="form-label fw-bold">Địa chỉ giao hàng <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <span class="input-icon top-icon"><i class="bi bi-geo-alt"></i></span>
+                <textarea 
+                  id="address" 
+                  v-model="formData.address" 
+                  class="form-control custom-input"
+                  :class="{ 'is-invalid': errors.address }" 
+                  rows="3"
+                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" 
+                  @blur="validateField('address')"
+                  @input="clearError('address')" 
+                  aria-required="true"
+                ></textarea>
+              </div>
               <span v-if="errors.address" class="error-message">{{ errors.address }}</span>
             </div>
 
-            <div class="form-group">
-              <label for="payment" class="form-label">
-                Phương thức thanh toán <span class="required">*</span>
-              </label>
+            <div class="form-group mb-4">
+              <label class="form-label fw-bold mb-3">Phương thức thanh toán <span class="required">*</span></label>
               <div class="payment-options">
-                <label class="payment-option">
-                  <input type="radio" v-model="formData.payment" value="COD" name="payment" />
+                <label class="payment-option" :class="{ active: formData.payment === 'COD' }">
+                  <input type="radio" v-model="formData.payment" value="COD" name="payment" hidden />
                   <div class="option-content">
-                    <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                    <div class="radio-circle"></div>
+                    <i class="bi bi-cash-stack text-success fs-4 me-2"></i>
                     <span>Thanh toán khi nhận hàng (COD)</span>
                   </div>
                 </label>
-                <label class="payment-option">
-                  <input type="radio" v-model="formData.payment" value="BANK" name="payment" />
+                
+                <label class="payment-option" :class="{ active: formData.payment === 'BANK' }">
+                  <input type="radio" v-model="formData.payment" value="BANK" name="payment" hidden />
                   <div class="option-content">
-                    <i class="bi bi-bank" aria-hidden="true"></i>
+                    <div class="radio-circle"></div>
+                    <i class="bi bi-bank text-primary fs-4 me-2"></i>
                     <span>Chuyển khoản ngân hàng</span>
                   </div>
                 </label>
               </div>
             </div>
 
-            <div class="form-group" v-if="formData.payment === 'BANK'">
-              <div class="bank-info">
-                <h4>Thông tin chuyển khoản:</h4>
-                <p><strong>Ngân hàng:</strong> Vietinbank</p>
-                <p><strong>Số tài khoản:</strong> 0354006080</p>
-                <p><strong>Chủ tài khoản:</strong> Phạm Trần Anh Quân</p>
-                <p><strong>Nội dung:</strong> [Mã đơn hàng] - [Họ tên]</p>
+            <div class="bank-info mt-3" v-if="formData.payment === 'BANK'">
+              <div class="d-flex gap-3 align-items-start">
+                <i class="bi bi-info-circle-fill text-purple fs-4 mt-1"></i>
+                <div>
+                  <h6 class="fw-bold text-purple mb-2">Thông tin chuyển khoản:</h6>
+                  <p class="mb-1">Ngân hàng: <strong>Vietinbank</strong></p>
+                  <p class="mb-1">Số tài khoản: <strong>0354006080</strong></p>
+                  <p class="mb-1">Chủ tài khoản: <strong>Phạm Trần Anh Quân</strong></p>
+                  <p class="mb-0 text-muted small">Nội dung: [Mã đơn hàng] - [Tên bạn]</p>
+                </div>
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="note" class="form-label">
-                Ghi chú (tùy chọn)
-              </label>
-              <textarea id="note" v-model="formData.note" class="form-textarea" rows="2"
-                placeholder="Ghi chú thêm cho đơn hàng..."></textarea>
+            <div class="form-group mt-4">
+              <label for="note" class="form-label fw-bold">Ghi chú (tùy chọn)</label>
+              <div class="input-wrapper">
+                <span class="input-icon top-icon"><i class="bi bi-pencil"></i></span>
+                <textarea 
+                  id="note" 
+                  v-model="formData.note" 
+                  class="form-control custom-input" 
+                  rows="2"
+                  placeholder="Ghi chú thêm cho đơn hàng..."
+                ></textarea>
+              </div>
             </div>
           </div>
 
-          <!-- Order Summary Section -->
-          <div class="summary-section">
+          <div class="summary-section shadow-sm border-0 h-100">
             <div class="summary-card">
-              <h2 class="section-title">
-                <i class="bi bi-receipt" aria-hidden="true"></i>
+              <h2 class="section-title text-dark">
+                <i class="bi bi-bag-check-fill text-purple me-2"></i>
                 Đơn hàng của bạn
               </h2>
 
-              <div class="order-items">
+              <div class="order-items custom-scrollbar">
                 <div v-for="item in cartItems" :key="item.id" class="order-item">
-                  <img :src="item.image" :alt="item.name" class="item-image" />
-                  <div class="item-info">
-                    <h4 class="item-name">{{ item.name }}</h4>
-                    <p class="item-quantity">Số lượng: {{ item.quantity }}</p>
+                  <div class="position-relative me-3">
+                    <img :src="item.image" :alt="item.name" class="item-image" />
                   </div>
-                  <div class="item-price">
+                  <div class="item-info flex-grow-1">
+                    <h4 class="item-name text-truncate" style="max-width: 180px;">{{ item.name }}</h4>
+                    <p class="item-price text-purple mb-0">
+                      {{ formatPrice(item.price) }} 
+                      <span class="text-muted small ms-1">x{{ item.quantity }}</span>
+                    </p>
+                    </div>
+                  <div class="item-total fw-bold">
                     {{ formatPrice(item.price * item.quantity) }}
                   </div>
                 </div>
               </div>
 
-              <div class="summary-divider"></div>
+              <div class="summary-divider my-4"></div>
 
               <div class="summary-row">
-                <span>Tạm tính:</span>
+                <span class="text-muted">Tạm tính:</span>
                 <span class="summary-value">{{ formatPrice(subtotal) }}</span>
               </div>
 
               <div class="summary-row">
-                <span>Phí vận chuyển:</span>
-                <span class="summary-value">{{ formatPrice(shippingFee) }}</span>
+                <span class="text-muted">Phí vận chuyển:</span>
+                <span class="summary-value text-success">{{ formatPrice(shippingFee) }}</span>
               </div>
 
-              <div class="summary-divider"></div>
+              <div class="summary-divider my-3"></div>
 
-              <div class="summary-row summary-total">
-                <span>Tổng cộng:</span>
-                <span class="summary-value">{{ formatPrice(totalAmount) }}</span>
+              <div class="summary-row summary-total align-items-center">
+                <span class="fs-5">Tổng cộng:</span>
+                <span class="summary-value fs-3 text-purple">{{ formatPrice(totalAmount) }}</span>
               </div>
 
-              <button type="submit" class="btn-submit" :disabled="isSubmitting">
+              <button type="submit" class="btn-submit mt-4" :disabled="isSubmitting">
                 <span v-if="!isSubmitting">
-                  <i class="bi bi-check-circle" aria-hidden="true"></i>
-                  Xác nhận đặt hàng
+                  <i class="bi bi-check-circle me-2"></i> Xác nhận đặt hàng
                 </span>
                 <span v-else>
-                  <i class="bi bi-arrow-repeat spinning" aria-hidden="true"></i>
-                  Đang xử lý...
+                  <i class="bi bi-arrow-repeat spinning me-2"></i> Đang xử lý...
                 </span>
               </button>
 
-              <router-link to="/cart" class="btn-back">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                Quay lại giỏ hàng
+              <router-link to="/cart" class="btn-back mt-3">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại giỏ hàng
               </router-link>
             </div>
           </div>
         </div>
       </form>
     </div>
-
-    <!-- Success Modal/Toast would go here -->
   </div>
 </template>
 
@@ -417,14 +447,10 @@ const handleSubmit = async () => {
 
     // Dispatch event to update navbar
     window.dispatchEvent(new Event('storage'))
+    window.dispatchEvent(new Event('cart-updated'))
 
     // Send order confirmation email
-    console.log('📧 Attempting to send order confirmation email...')
-    console.log('Current user:', currentUser)
-    console.log('User email:', currentUser.email)
-
     try {
-      console.log('📤 Calling sendOrderConfirmation...')
       await sendOrderConfirmation({
         orderNumber: orderId,
         customerName: formData.value.name,
@@ -433,23 +459,18 @@ const handleSubmit = async () => {
         address: formData.value.address,
         payment: formData.value.payment
       }, currentUser.email)
-
-      console.log('✅ Order confirmation email sent')
     } catch (emailError) {
       console.error('⚠️ Failed to send email:', emailError)
-      console.error('Email error details:', emailError.message)
-      console.error('Email error stack:', emailError.stack)
-      // Don't block order completion if email fails
     }
 
     // Show success message
-    alert(`✅ Đặt hàng thành công!\n\nMã đơn hàng: #${orderId}\nChúng tôi sẽ liên hệ với bạn sớm nhất!`)
+    alert(`✅ Đặt hàng thành công!\n\nMã đơn hàng: #${orderId}`)
 
     // Redirect to home
     router.push('/')
   } catch (error) {
     console.error('Error submitting order:', error)
-    alert('❌ Không thể đặt hàng. Vui lòng kiểm tra kết nối và thử lại!')
+    alert('❌ Không thể đặt hàng. Vui lòng thử lại!')
   } finally {
     isSubmitting.value = false
   }
@@ -464,383 +485,266 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* CSS Custom Properties */
+/* CSS Variables - Tím Chủ Đạo */
 :root {
-  --primary-color: #0d6efd;
-  --primary-hover: #0a58ca;
+  --primary-color: #6f42c1;
+  --primary-hover: #5a32a3;
   --success-color: #28a745;
   --danger-color: #dc3545;
-  --light-color: #f8f9fa;
-  --dark-color: #212529;
-  --border-color: #dee2e6;
-  --text-muted: #6c757d;
-  --transition-speed: 0.3s;
+  --light-bg: #f5f7fa; /* Màu nền trang */
+  --input-bg: #f8f9fa; /* Màu nền input */
+  --border-color: #e1e5eb;
+  --text-dark: #343a40;
   --border-radius: 12px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
+
+/* Helpers */
+.text-purple { color: #6f42c1 !important; }
+.bg-purple { background-color: #6f42c1 !important; }
 
 /* Page Layout */
 .checkout-page {
-  min-height: calc(100vh - 200px);
-  padding: 2rem 0;
-  background: var(--light-color);
+  min-height: calc(100vh - 80px);
+  padding: 40px 0;
+  background-color: #f5f7fa;
 }
 
 .checkout-container {
-  max-width: 1200px;
+  max-width: 1140px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 15px;
 }
 
-/* Header */
 .checkout-header {
   text-align: center;
-  margin-bottom: 2rem;
-  animation: fadeIn 0.5s ease-out;
+  margin-bottom: 40px;
 }
 
 .checkout-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
   font-size: 2rem;
-  font-weight: 700;
-  color: var(--dark-color);
-  margin: 0 0 0.5rem;
-}
-
-.checkout-title i {
-  font-size: 2.25rem;
-  color: var(--primary-color);
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 10px;
 }
 
 .checkout-subtitle {
-  color: var(--text-muted);
-  margin: 0;
+  color: #6c757d;
 }
 
-/* Loading and Empty States */
-.loading-state,
-.empty-checkout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
+/* --- CUSTOM INPUT STYLES (KHUNG NỀN NHẠT) --- */
+.input-wrapper {
+  position: relative;
 }
 
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border-color);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 1rem;
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0a0a0;
+  font-size: 1.2rem;
+  z-index: 2;
+  transition: color 0.3s;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.input-icon.top-icon {
+  top: 20px; /* Cho textarea */
 }
 
-.empty-icon {
-  font-size: 5rem;
-  color: var(--text-muted);
-  opacity: 0.5;
-  margin-bottom: 1.5rem;
+/* Style cho Input/Textarea */
+.custom-input {
+  background-color: #f8f9fa; /* Nền xám nhạt */
+  border: 1px solid #e1e5eb;
+  border-radius: 10px;
+  padding: 12px 15px 12px 45px; /* Padding trái né icon */
+  font-size: 0.95rem;
+  color: #495057;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.empty-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem;
+/* Hiệu ứng Focus */
+.custom-input:focus {
+  background-color: #ffffff;
+  border-color: #6f42c1;
+  box-shadow: 0 0 0 4px rgba(111, 66, 193, 0.1);
+  outline: none;
 }
 
-.empty-description {
-  color: var(--text-muted);
-  margin: 0 0 2rem;
+/* Đổi màu icon khi focus */
+.custom-input:focus + .input-icon,
+.input-wrapper:focus-within .input-icon {
+  color: #6f42c1;
 }
 
-.btn-shop-now {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 2rem;
-  background: var(--primary-color);
-  color: white;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  text-decoration: none;
-  transition: all var(--transition-speed) ease;
+/* Lỗi Validation */
+.custom-input.is-invalid {
+  border-color: #dc3545 !important;
+  background-color: #fff8f8;
+}
+.error-message {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 5px;
+  display: block;
 }
 
-.btn-shop-now:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  color: white;
-}
+.required { color: #dc3545; }
 
-/* Checkout Form */
-.checkout-form {
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* Form Layout */
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 2rem;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 30px;
 }
 
-/* Form Section */
-.form-section,
-.summary-section {
+.form-section, .summary-section {
   background: white;
-  padding: 2rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
+  padding: 30px;
+  border-radius: 16px;
 }
 
 .section-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.375rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: var(--dark-color);
-  margin: 0 0 1.5rem;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
 }
 
-.section-title i {
-  color: var(--primary-color);
-  font-size: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--dark-color);
-}
-
-.required {
-  color: var(--danger-color);
-}
-
-.form-input,
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all var(--transition-speed) ease;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.form-input.invalid,
-.form-textarea.invalid {
-  border-color: var(--danger-color);
-}
-
-.error-message {
-  display: block;
-  color: var(--danger-color);
-  font-size: 0.875rem;
-  margin-top: 0.375rem;
-}
-
-/* Payment Options */
+/* Payment Options (Radio Custom) */
 .payment-options {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 15px;
 }
 
 .payment-option {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
   cursor: pointer;
-  transition: all var(--transition-speed) ease;
-}
-
-.payment-option:hover {
-  border-color: var(--primary-color);
-  background: rgba(13, 110, 253, 0.05);
-}
-
-.payment-option input[type="radio"] {
-  margin-right: 0.75rem;
-  accent-color: var(--primary-color);
-  width: 20px;
-  height: 20px;
+  display: block;
 }
 
 .option-content {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
+  padding: 15px;
+  border: 2px solid #e1e5eb;
+  border-radius: 10px;
+  transition: all 0.2s;
 }
 
-.option-content i {
-  font-size: 1.25rem;
-  color: var(--primary-color);
+.radio-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #adb5bd;
+  border-radius: 50%;
+  margin-right: 15px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Trạng thái Active của Payment */
+.payment-option.active .option-content {
+  border-color: #6f42c1;
+  background-color: #f3f0ff;
+}
+
+.payment-option.active .radio-circle {
+  border-color: #6f42c1;
+}
+
+.payment-option.active .radio-circle::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: #6f42c1;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Bank Info */
 .bank-info {
-  padding: 1rem;
-  background: rgba(13, 110, 253, 0.05);
-  border-left: 4px solid var(--primary-color);
-  border-radius: 6px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px dashed #6f42c1;
 }
 
-.bank-info h4 {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
-  color: var(--primary-color);
-}
-
-.bank-info p {
-  margin: 0.375rem 0;
-  font-size: 0.9375rem;
-}
-
-/* Order Summary */
-.summary-card {
-  position: sticky;
-  top: 1rem;
-}
-
+/* Order Summary Items */
 .order-items {
-  max-height: 300px;
+  max-height: 350px;
   overflow-y: auto;
-  margin-bottom: 1rem;
+  padding-right: 5px;
 }
 
 .order-item {
-  display: grid;
-  grid-template-columns: 60px 1fr auto;
-  gap: 1rem;
-  padding: 0.75rem;
-  margin-bottom: 0.75rem;
-  background: var(--light-color);
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .item-image {
   width: 60px;
   height: 60px;
-  object-fit: contain;
-  border-radius: 6px;
-  background: white;
-  padding: 0.25rem;
-}
-
-.item-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
 }
 
 .item-name {
-  font-size: 0.9375rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  margin: 0 0 0.25rem;
-  color: var(--dark-color);
-}
-
-.item-quantity {
-  font-size: 0.875rem;
-  color: var(--text-muted);
   margin: 0;
+  color: #333;
 }
 
 .item-price {
-  display: flex;
-  align-items: center;
-  font-weight: 700;
-  color: var(--primary-color);
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 .summary-divider {
   height: 1px;
-  background: var(--border-color);
-  margin: 1rem 0;
+  background: #e1e5eb;
+  border-top: 1px dashed #ccc;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 12px;
   font-size: 1rem;
 }
 
 .summary-value {
-  font-weight: 600;
-}
-
-.summary-total {
-  font-size: 1.375rem;
   font-weight: 700;
-  color: var(--primary-color);
-  margin-top: 0.5rem;
-  margin-bottom: 1.5rem;
+  color: #333;
 }
 
 /* Buttons */
 .btn-submit {
   width: 100%;
-  padding: 1rem;
-  background: var(--primary-color);
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  border-radius: var(--border-radius);
-  font-size: 1.0625rem;
+  border-radius: 10px;
+  font-size: 1.1rem;
   font-weight: 700;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  transition: all var(--transition-speed) ease;
-  margin-bottom: 0.75rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 6px rgba(111, 66, 193, 0.2);
 }
 
-.btn-submit:not(:disabled):hover {
-  background: var(--primary-hover);
+.btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 15px rgba(111, 66, 193, 0.3);
+  background: linear-gradient(135deg, #7b4ecf 0%, #663bb0 100%);
 }
 
 .btn-submit:disabled {
@@ -848,54 +752,59 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.spinning {
-  animation: spin 1s linear infinite;
-}
-
 .btn-back {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.875rem;
-  background: transparent;
-  color: var(--primary-color);
-  border: 2px solid var(--primary-color);
-  border-radius: var(--border-radius);
-  font-weight: 600;
+  gap: 8px;
+  margin-top: 15px;
+  color: #6c757d;
   text-decoration: none;
-  transition: all var(--transition-speed) ease;
+  font-weight: 600;
+  transition: color 0.2s;
+  padding: 10px;
 }
 
 .btn-back:hover {
-  background: var(--primary-color);
-  color: white;
+  color: #6f42c1;
 }
 
-/* Responsive Design */
+.btn-shop-now {
+  display: inline-block;
+  padding: 10px 25px;
+  background: #6f42c1;
+  color: white;
+  border-radius: 50px;
+  text-decoration: none;
+  margin-top: 20px;
+}
+
+/* Empty & Loading */
+.loading-state, .empty-checkout {
+  text-align: center;
+  padding: 50px 20px;
+  background: white;
+  border-radius: 16px;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #eee;
+  border-top-color: #6f42c1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Scrollbar nhỏ cho list items */
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
+
+/* Responsive */
 @media (max-width: 992px) {
   .form-grid {
     grid-template-columns: 1fr;
-  }
-
-  .summary-card {
-    position: static;
-  }
-}
-
-@media (max-width: 480px) {
-  .checkout-title {
-    font-size: 1.5rem;
-  }
-
-  .form-section,
-  .summary-section {
-    padding: 1.5rem 1rem;
-  }
-
-  .section-title {
-    font-size: 1.125rem;
   }
 }
 </style>

@@ -1,7 +1,6 @@
 <template>
   <div class="cart-page">
     <div class="cart-container">
-      <!-- Header -->
       <div class="cart-header">
         <h1 class="cart-title">
           <i class="bi bi-cart3" aria-hidden="true"></i>
@@ -12,13 +11,11 @@
         </p>
       </div>
 
-      <!-- Loading State -->
       <div v-if="isLoading" class="loading-state">
         <div class="spinner"></div>
         <p>Đang tải giỏ hàng...</p>
       </div>
 
-      <!-- Empty Cart State -->
       <div v-else-if="cartItems.length === 0" class="empty-cart">
         <div class="empty-icon">
           <i class="bi bi-cart-x" aria-hidden="true"></i>
@@ -33,7 +30,6 @@
         </router-link>
       </div>
 
-      <!-- Cart Items -->
       <div v-else class="cart-content">
         <div class="cart-items">
           <div v-for="item in cartItems" :key="item.id" class="cart-item">
@@ -79,7 +75,6 @@
           </div>
         </div>
 
-        <!-- Cart Summary -->
         <div class="cart-summary">
           <div class="summary-card">
             <h3 class="summary-title">Tóm tắt đơn hàng</h3>
@@ -101,15 +96,17 @@
               <span class="summary-value">{{ formatPrice(totalAmount) }}</span>
             </div>
 
-            <router-link to="/checkout" class="btn-checkout">
+            <router-link to="/checkout" class="btn btn-purple w-100 py-3 mb-3 d-flex align-items-center justify-content-center gap-2">
               <i class="bi bi-credit-card" aria-hidden="true"></i>
               Tiến hành thanh toán
             </router-link>
 
-            <router-link to="/" class="btn-continue">
-              <i class="bi bi-arrow-left" aria-hidden="true"></i>
-              Tiếp tục mua sắm
-            </router-link>
+            <div class="text-center">
+              <router-link to="/" class="text-decoration-none text-muted small hover-purple">
+                <i class="bi bi-arrow-left me-1"></i> Tiếp tục mua sắm
+              </router-link>
+            </div>
+
           </div>
         </div>
       </div>
@@ -170,10 +167,8 @@ const formatPrice = (price: number): string => {
  */
 const loadCart = async () => {
   try {
-    // Get current user from localStorage (session)
     const currentUserStr = localStorage.getItem('currentUser')
     if (!currentUserStr) {
-      // No user logged in, keep cart empty
       cartItems.value = []
       isLoading.value = false
       return
@@ -182,16 +177,13 @@ const loadCart = async () => {
     const currentUser = JSON.parse(currentUserStr)
     const userId = currentUser.id
 
-    // Fetch cart from API
     const response = await axios.get(`${CART_API_URL}?userId=${userId}`)
     
     if (response.data && response.data.length > 0) {
-      // Cart exists for this user
       const cart = response.data[0]
       currentCartId.value = cart.id
       cartItems.value = cart.items || []
     } else {
-      // No cart yet, create empty cart
       cartItems.value = []
       currentCartId.value = null
     }
@@ -222,13 +214,11 @@ const saveCart = async () => {
     }
 
     if (currentCartId.value) {
-      // Update existing cart
       await axios.put(`${CART_API_URL}/${currentCartId.value}`, {
         ...cartData,
         id: currentCartId.value
       })
     } else {
-      // Create new cart
       const response = await axios.post(CART_API_URL, cartData)
       currentCartId.value = response.data.id
     }
@@ -349,7 +339,7 @@ onMounted(() => {
 
 .cart-title i {
   font-size: 2.25rem;
-  color: var(--primary-color);
+  color: #6f42c1; /* Đổi icon giỏ hàng thành màu tím luôn cho đẹp */
 }
 
 .cart-subtitle {
@@ -371,7 +361,7 @@ onMounted(() => {
   width: 48px;
   height: 48px;
   border: 4px solid var(--border-color);
-  border-top-color: var(--primary-color);
+  border-top-color: #6f42c1; /* Spinner màu tím */
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 1rem;
@@ -422,7 +412,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 2rem;
-  background: var(--primary-color);
+  background: #6f42c1; /* Nút tím */
   color: white;
   border: none;
   border-radius: var(--border-radius);
@@ -432,7 +422,7 @@ onMounted(() => {
 }
 
 .btn-shop-now:hover {
-  background: var(--primary-hover);
+  background: #5a32a3;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   color: white;
@@ -524,7 +514,7 @@ onMounted(() => {
 .item-price {
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #6f42c1; /* Giá màu tím */
   margin: 0;
 }
 
@@ -552,9 +542,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary-color);
-  color: white;
-  border: none;
+  background: #f3f0ff; /* Nền tím nhạt */
+  color: #6f42c1; /* Icon tím */
+  border: 1px solid #e0d4fc;
   border-radius: 6px;
   cursor: pointer;
   transition: all var(--transition-speed) ease;
@@ -562,7 +552,8 @@ onMounted(() => {
 }
 
 .qty-btn:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: #6f42c1;
+  color: white;
   transform: scale(1.1);
 }
 
@@ -583,7 +574,7 @@ onMounted(() => {
 
 .qty-input:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: #6f42c1;
 }
 
 .item-total {
@@ -616,8 +607,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: var(--danger-color);
-  border: 2px solid var(--danger-color);
+  color: var(--text-muted);
+  border: 2px solid #eee;
   border-radius: 8px;
   cursor: pointer;
   transition: all var(--transition-speed) ease;
@@ -625,8 +616,9 @@ onMounted(() => {
 }
 
 .btn-remove:hover {
-  background: var(--danger-color);
-  color: white;
+  background: #fff5f5;
+  color: var(--danger-color);
+  border-color: var(--danger-color);
   transform: rotate(15deg) scale(1.1);
 }
 
@@ -673,56 +665,37 @@ onMounted(() => {
 .summary-total {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #6f42c1; /* Tổng tiền màu tím */
   margin-bottom: 1.5rem;
 }
 
-.btn-checkout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 1rem;
-  background: var(--primary-color);
-  color: white;
+/* --- BUTTON MỚI: TÍM GRADIENT --- */
+.btn-purple {
+  background: linear-gradient(to right, #6f42c1, #5a32a3);
   border: none;
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all var(--transition-speed) ease;
-  margin-bottom: 0.75rem;
-}
-
-.btn-checkout:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  color: white;
-}
-
-.btn-continue {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.875rem;
-  background: transparent;
-  color: var(--primary-color);
-  border: 2px solid var(--primary-color);
-  border-radius: var(--border-radius);
-  font-size: 0.9375rem;
+  color: white !important;
+  border-radius: 12px;
   font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 6px -1px rgba(111, 66, 193, 0.2);
+  transition: all 0.3s ease;
   text-decoration: none;
-  transition: all var(--transition-speed) ease;
 }
 
-.btn-continue:hover {
-  background: var(--primary-color);
-  color: white;
+.btn-purple:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(111, 66, 193, 0.3);
+  background: linear-gradient(to right, #7b4ecf, #663bb0);
+  color: white !important;
+}
+
+/* --- LINK HOVER EFFECT --- */
+.hover-purple {
+  transition: color 0.2s;
+}
+.hover-purple:hover {
+  color: #6f42c1 !important;
+  text-decoration: underline !important;
 }
 
 /* Responsive Design */

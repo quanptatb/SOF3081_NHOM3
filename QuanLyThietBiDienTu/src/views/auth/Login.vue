@@ -19,7 +19,7 @@
               <div class="col-lg-6">
                 <div class="p-5">
                   <div class="text-center mb-5">
-                    <h2 class="fw-bold text-dark">Đăng Nhập</h2>
+                    <h2 class="fw-bold text-dark">Đăng nhập</h2>
                     <p class="text-muted">Nhập thông tin để truy cập tài khoản</p>
                   </div>
 
@@ -70,7 +70,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-purple w-100 py-3 fw-bold shadow-sm mb-4" :disabled="isLoading">
-                      <span v-if="!isLoading">Đăng Nhập</span>
+                      <span v-if="!isLoading">Đăng nhập</span>
                       <span v-else>
                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                         Đang xử lý...

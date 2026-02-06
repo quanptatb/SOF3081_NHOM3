@@ -1,6 +1,5 @@
 <template>
   <div class="orders-page">
-    <!-- Header -->
     <div class="page-header">
       <div class="header-content">
         <h1 class="page-title">
@@ -21,7 +20,6 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon stat-total">
@@ -54,7 +52,6 @@
       </div>
     </div>
 
-    <!-- Filters -->
     <div class="filters-bar">
       <div class="filter-group">
         <label>Trạng thái:</label>
@@ -68,20 +65,21 @@
         </select>
       </div>
 
-      <div class="filter-group">
+      <div class="filter-group flex-grow-1">
         <label>Tìm kiếm:</label>
-        <input v-model="searchQuery" type="text" class="filter-search"
-          placeholder="Mã đơn, tên khách hàng, số điện thoại..." />
+        <div class="search-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input v-model="searchQuery" type="text" class="filter-search"
+            placeholder="Tìm theo mã đơn, tên khách hàng, số điện thoại..." />
+        </div>
       </div>
     </div>
 
-    <!-- Loading State -->
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
       <p>Đang tải đơn hàng...</p>
     </div>
 
-    <!-- Empty State -->
     <div v-else-if="filteredOrders.length === 0" class="empty-state">
       <div class="empty-icon">
         <i class="bi bi-inbox" aria-hidden="true"></i>
@@ -95,7 +93,6 @@
       </p>
     </div>
 
-    <!-- Orders Table -->
     <div v-else class="orders-table-container">
       <table class="orders-table">
         <thead>
@@ -153,21 +150,21 @@
         </tbody>
       </table>
 
-      <!-- Pagination -->
       <div class="pagination" v-if="totalPages > 1">
         <button class="page-btn" :disabled="currentPage === 1" @click="currentPage--">
-          &laquo; Trước
+          <i class="bi bi-chevron-left me-1"></i> Trước
         </button>
-        <span class="page-info">
-          Trang {{ currentPage }} / {{ totalPages }}
-        </span>
+        
+        <div class="page-info">
+          Trang <span class="fw-bold text-purple">{{ currentPage }}</span> / {{ totalPages }}
+        </div>
+        
         <button class="page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
-          Sau &raquo;
+          Sau <i class="bi bi-chevron-right ms-1"></i>
         </button>
       </div>
     </div>
 
-    <!-- Order Details Modal -->
     <div v-if="selectedOrder" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
@@ -391,8 +388,6 @@ const deleteOrder = async (orderId: number) => {
   }
 }
 
-
-
 const resetData = async () => {
   if (confirm('Bạn có chắc muốn xóa sạch tất cả dữ liệu đơn hàng?')) {
     try {
@@ -421,7 +416,7 @@ onMounted(() => {
 <style scoped>
 /* CSS Custom Properties */
 :root {
-  --primary-color: #0d6efd;
+  --primary-color: #6f42c1;
   --success-color: #28a745;
   --warning-color: #ffc107;
   --danger-color: #dc3545;
@@ -485,8 +480,8 @@ onMounted(() => {
   gap: 0.75rem;
 }
 
-.btn-refresh,
-.btn-reset {
+/* Button Styles */
+.btn-refresh {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -497,29 +492,42 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-}
-
-.btn-refresh {
-  background: var(--primary-color);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 6px rgba(111, 66, 193, 0.2);
 }
 
 .btn-refresh:hover:not(:disabled) {
-  background: #0a58ca;
   transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(111, 66, 193, 0.3);
+  background: linear-gradient(135deg, #7b4ecf 0%, #663bb0 100%);
 }
 
 .btn-refresh:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  background: #a0a0a0;
 }
 
 .btn-reset {
-  background: var(--danger-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
 }
 
 .btn-reset:hover {
-  background: #c82333;
+  background: #f8f9fa;
+  color: #333;
+  border-color: #c1c1c1;
   transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
 .spinning {
@@ -527,9 +535,7 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 /* Stats Grid */
@@ -561,7 +567,7 @@ onMounted(() => {
 }
 
 .stat-total {
-  background: rgba(13, 110, 253, 0.1);
+  background: rgba(111, 66, 193, 0.1);
   color: var(--primary-color);
 }
 
@@ -597,36 +603,74 @@ onMounted(() => {
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-sm);
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 
 .filter-group {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .filter-group label {
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 .filter-select,
+.search-wrapper {
+  background-color: #f4f6f8;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  height: 48px;
+}
+
+.filter-select {
+  padding: 0 2rem 0 1rem;
+  font-size: 0.95rem;
+  color: #495057;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  width: 100%;
+  min-width: 350px;
+}
+
+.search-icon {
+  color: #a1a5b7;
+  font-size: 1.1rem;
+  margin-right: 0.8rem;
+}
+
 .filter-search {
-  padding: 0.5rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  transition: border-color 0.3s ease;
+  border: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  font-size: 0.95rem;
+  color: #495057;
+  outline: none;
+}
+
+.filter-select:hover,
+.search-wrapper:hover {
+  background-color: #ebedf3;
 }
 
 .filter-select:focus,
-.filter-search:focus {
+.filter-search:focus,
+.search-wrapper:focus-within {
+  background-color: #ffffff;
+  border-color: #6f42c1;
+  box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.1);
   outline: none;
-  border-color: var(--primary-color);
-}
-
-.filter-search {
-  min-width: 300px;
 }
 
 /* Loading & Empty States */
@@ -798,7 +842,7 @@ onMounted(() => {
 }
 
 .btn-view {
-  background: rgba(13, 110, 253, 0.1);
+  background: rgba(111, 66, 193, 0.1);
   color: var(--primary-color);
 }
 
@@ -817,33 +861,58 @@ onMounted(() => {
   color: white;
 }
 
-/* Pagination */
+/* --- PAGINATION (ĐÃ SỬA: STYLE HIỆN ĐẠI) --- */
 .pagination {
+  margin-top: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 1.5rem;
+  gap: 15px;
+  padding: 1rem;
 }
 
 .page-btn {
-  padding: 0.5rem 1rem;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 6px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  color: #5e6278;
+  padding: 10px 20px;
+  border-radius: 12px;
   font-weight: 600;
+  transition: all 0.3s;
   cursor: pointer;
-  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .page-btn:hover:not(:disabled) {
-  background: #0a58ca;
+  border-color: #6f42c1;
+  color: #6f42c1;
+  background: #f3f0ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(111, 66, 193, 0.15);
 }
 
 .page-btn:disabled {
-  opacity: 0.4;
+  background: #f5f5f5;
+  color: #bbb;
+  border-color: #eee;
   cursor: not-allowed;
+  box-shadow: none;
+  opacity: 1; /* Đảm bảo không bị mờ quá */
+}
+
+.page-info {
+  font-weight: 600;
+  color: #3f4254;
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.text-purple {
+  color: #6f42c1;
 }
 
 /* Modal */
@@ -959,11 +1028,11 @@ onMounted(() => {
   .filters-bar {
     flex-direction: column;
     gap: 1rem;
+    align-items: stretch;
   }
 
-  .filter-search {
+  .search-wrapper {
     min-width: auto;
-    width: 100%;
   }
 
   .orders-table-container {

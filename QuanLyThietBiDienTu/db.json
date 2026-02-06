@@ -185,13 +185,6 @@
       "email": "n@gmail.com",
       "password": "15092008",
       "role": "user"
-    },
-    {
-      "id": "2d7f",
-      "name": "Anh Như",
-      "email": "n@gmail.mhhs",
-      "password": "150908",
-      "role": "user"
     }
   ],
   "carts": [
@@ -222,6 +215,19 @@
     },
     {
       "id": "430b",
+      "items": [
+        {
+          "productId": 1,
+          "name": "CPU Intel Core i5 12400F",
+          "price": 4500000,
+          "image": "/src/assets/images/inteli5.png",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "bba1",
+      "userId": "1",
       "items": [
         {
           "productId": 1,

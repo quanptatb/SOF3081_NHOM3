@@ -1,25 +1,28 @@
 <template>
-  <div class="container my-2" v-if="products">
+  <div class="container my-3" v-if="products">
     <div class="row">
       <div class="col-12">
-        <p class="small text-muted mb-3" v-if="search">
-          Tìm thấy <b>{{ filteredProducts.length }}</b> sản phẩm phù hợp
+        <p class="small fw-bold text-dark mb-3" v-if="search">
+          Tìm thấy <span class="text-purple">{{ filteredProducts.length }}</span> sản phẩm phù hợp
         </p>
 
         <div class="row g-3">
           <div v-for="p in paginatedProducts" :key="p.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
             <router-link :to="`/productuser/${p.id}`" class="text-decoration-none h-100 d-block">
-              <div class="card product-card-tgdd h-100 border-0 shadow-sm p-2">
+              <div class="card product-card-tgdd h-100 p-2">
+                
                 <div class="product-img-wrap mb-2">
                   <img :src="p.image" class="img-fluid" loading="lazy" />
                 </div>
-                <div class="card-body p-1">
-                  <h6 class="product-name text-dark mb-2">{{ p.name }}</h6>
-                  <div class="price-box mb-2">
-                    <span class="text-dark fw-bold d-block fs-5">{{ formatPrice(p.price) }}</span>
-                    <div class="d-flex align-items-center gap-2">
-                      <span class="text-muted text-decoration-line-through x-small">{{ formatPrice(p.price * 1.2) }}</span>
-                      <span class="text-danger fw-bold x-small">-20%</span>
+
+                <div class="card-body p-1 d-flex flex-column">
+                  <h6 class="product-name text-black mb-2">{{ p.name }}</h6>
+                  
+                  <div class="price-box mb-3">
+                    <span class="text-purple fw-bolder d-block price-main">{{ formatPrice(p.price) }}</span>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                      <span class="text-secondary text-decoration-line-through x-small fw-semibold">{{ formatPrice(p.price * 1.2) }}</span>
+                      <span class="badge bg-danger rounded-pill x-small">-20%</span>
                     </div>
                   </div>
 
@@ -31,7 +34,7 @@
                       </div>
                     </div>
                     <div class="promo-text-holder">
-                      <p class="promo-text-limit text-purple mb-0 animate__animated animate__fadeIn">
+                      <p class="promo-text-limit text-purple fw-bold mb-0 animate__animated animate__fadeIn">
                         {{ p.hoveredPromo || 'Rê chuột xem ưu đãi bank' }}
                       </p>
                     </div>
@@ -43,13 +46,20 @@
         </div>
 
         <nav class="mt-5" v-if="totalPages > 1">
-          <ul class="pagination pagination-sm justify-content-center">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }"><button class="page-link"
-                @click="currentPage--">«</button></li>
+          <ul class="pagination justify-content-center">
+            <li class="page-item" :class="{ disabled: currentPage === 1 }">
+              <button class="page-link shadow-sm" @click="currentPage--">
+                <i class="bi bi-chevron-left"></i> «
+              </button>
+            </li>
             <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
-              <button class="page-link" @click="currentPage = page">{{ page }}</button></li>
-            <li class="page-item" :class="{ disabled: currentPage === totalPages }"><button class="page-link"
-                @click="currentPage++">»</button></li>
+              <button class="page-link shadow-sm fw-bold" @click="currentPage = page">{{ page }}</button>
+            </li>
+            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+              <button class="page-link shadow-sm" @click="currentPage++">
+                » <i class="bi bi-chevron-right"></i>
+              </button>
+            </li>
           </ul>
         </nav>
       </div>
@@ -134,13 +144,18 @@ const paginatedProducts = computed(() => {
 </script>
 
 <style scoped>
-/* --- TEXT MÀU TÍM --- */
+/* --- TEXT & COLORS --- */
 .text-purple {
   color: #6f42c1 !important;
-  font-weight: 500;
 }
 
+.text-black {
+  color: #111 !important;
+}
+
+/* --- CARD SẢN PHẨM --- */
 .product-card-tgdd {
+  border: 1px solid #ced4da; /* Viền xám đậm hơn chút */
   border-radius: 12px;
   transition: all 0.3s ease;
   background: #fff;
@@ -149,10 +164,11 @@ const paginatedProducts = computed(() => {
   flex-direction: column;
 }
 
-/* Hover: Đổ bóng màu tím nhạt cho đồng bộ */
+/* Hover: Bóng đậm hơn & viền tím */
 .product-card-tgdd:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(111, 66, 193, 0.15) !important;
+  border-color: #6f42c1;
+  box-shadow: 0 10px 30px rgba(111, 66, 193, 0.2) !important;
 }
 
 .product-img-wrap {
@@ -161,8 +177,9 @@ const paginatedProducts = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 15px;
+  padding: 10px;
   background: #fff;
+  border-bottom: 1px solid #e9ecef; /* Đường kẻ dưới ảnh */
 }
 
 .product-img-wrap img {
@@ -170,47 +187,45 @@ const paginatedProducts = computed(() => {
   max-height: 100%;
   object-fit: contain;
   transition: transform 0.3s ease;
+  padding: 5px;
 }
 
 .product-card-tgdd:hover .product-img-wrap img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
-/* --- THÔNG TIN TÊN & GIÁ --- */
+/* --- TÊN & GIÁ --- */
 .product-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px; 
+  font-weight: 700; 
   height: 2.8rem;
   line-height: 1.4rem;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  color: #333;
   transition: color 0.3s;
 }
 
-/* Hover vào tên sản phẩm chuyển màu tím */
 .product-card-tgdd:hover .product-name {
-  color: #6f42c1;
+  color: #6f42c1 !important;
 }
 
-.price-box .fs-5 {
-  font-size: 1.1rem !important;
+.price-main {
+  font-size: 1.2rem !important;
 }
 
 /* --- BANK ICON --- */
 .bank-icon-sm {
-  width: 38px;
-  height: 24px;
+  width: 40px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
   cursor: pointer;
-  padding: 2px;
-  overflow: hidden;
-  flex-shrink: 0;
+  padding: 3px;
+  border-color: #ced4da !important; /* Viền icon đậm hơn */
   transition: all 0.2s;
 }
 
@@ -220,10 +235,9 @@ const paginatedProducts = computed(() => {
   object-fit: contain;
 }
 
-/* Hover bank icon ra màu tím */
 .bank-icon-sm:hover {
   border-color: #6f42c1 !important;
-  background-color: #f3f0ff; /* Nền tím rất nhạt */
+  background-color: #f3f0ff;
 }
 
 /* --- PROMO TEXT --- */
@@ -235,34 +249,54 @@ const paginatedProducts = computed(() => {
 }
 
 .promo-text-limit {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.2rem;
   height: 2.4rem;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  text-overflow: ellipsis;
-  word-break: break-word;
 }
 
-/* --- PAGINATION MÀU TÍM --- */
+/* --- PAGINATION --- */
 .page-link {
-  border: none;
+  border: 1px solid #ced4da;
   color: #333;
-  margin: 0 2px;
-  border-radius: 8px !important; /* Bo góc mềm mại hơn */
+  margin: 0 4px;
+  border-radius: 8px !important;
+  font-weight: 600;
+  min-width: 36px;
+  text-align: center;
   transition: all 0.3s;
 }
 
 .page-link:hover {
   background-color: #e9ecef;
   color: #6f42c1;
+  border-color: #6f42c1;
 }
 
 .page-item.active .page-link {
-  background-color: #6f42c1; /* Nền tím */
+  background-color: #6f42c1;
+  border-color: #6f42c1;
   color: #fff;
-  box-shadow: 0 2px 6px rgba(111, 66, 193, 0.4);
+  box-shadow: 0 4px 10px rgba(111, 66, 193, 0.3);
+}
+</style>
+
+<style>
+/* Làm đậm nền của các ô Dropdown (Select) */
+.form-select, select.form-control {
+  background-color: #f1f3f5 !important; /* Màu xám đậm hơn */
+  border-color: #ced4da !important; /* Viền đậm hơn */
+  color: #212529 !important; /* Chữ đen */
+  font-weight: 500;
+}
+
+/* Khi bấm vào Dropdown */
+.form-select:focus, select.form-control:focus {
+  background-color: #fff !important;
+  border-color: #6f42c1 !important;
+  box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25) !important;
 }
 </style>
