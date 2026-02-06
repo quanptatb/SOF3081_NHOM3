@@ -122,7 +122,7 @@
               </div>
             </td>
             <td>{{ order.phone }}</td>
-            <td>{{ formatDate(order.date) }}</td>
+            <td>{{ formatDate(order.createdAt) }}</td>
             <td class="order-total">{{ formatCurrency(order.total) }}</td>
             <td>
               <span class="payment-badge" :class="`payment-${order.payment?.toLowerCase() || 'cod'}`">
@@ -236,6 +236,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { toast } from '../../composables/useToast'
+import axios from 'axios'
+
+/**
+ * API Configuration
+ */
+const ORDERS_API_URL = 'http://localhost:3000/orders'
 
 /**
  * Types
@@ -248,14 +254,15 @@ interface OrderItem {
 }
 
 interface Order {
-  id: string
+  id: number
+  userId?: number
   customerName: string
   phone: string
   address: string
   payment?: string
   note?: string
   total: number
-  date: string
+  createdAt: string
   status: string
   items: OrderItem[]
 }
@@ -331,11 +338,11 @@ const formatDate = (dateStr: string): string => {
   }
 }
 
-const loadOrders = () => {
+const loadOrders = async () => {
   isLoading.value = true
   try {
-    const data = localStorage.getItem('site_orders')
-    orders.value = data ? JSON.parse(data) : []
+    const response = await axios.get(ORDERS_API_URL)
+    orders.value = response.data
     toast().info('Đã tải lại danh sách đơn hàng')
   } catch (error) {
     console.error('Error loading orders:', error)
@@ -347,13 +354,15 @@ const loadOrders = () => {
   }
 }
 
-const updateOrderStatus = (order: Order) => {
+const updateOrderStatus = async (order: Order) => {
   try {
-    saveData()
+    await axios.put(`${ORDERS_API_URL}/${order.id}`, order)
     toast().success(`Đã cập nhật trạng thái đơn hàng #${order.id}`)
   } catch (error) {
     console.error('Error updating order status:', error)
     toast().error('Không thể cập nhật trạng thái')
+    // Reload to revert any changes
+    await loadOrders()
   }
 }
 
@@ -371,10 +380,10 @@ const confirmDeleteOrder = (order: Order) => {
   }
 }
 
-const deleteOrder = (orderId: string) => {
+const deleteOrder = async (orderId: number) => {
   try {
+    await axios.delete(`${ORDERS_API_URL}/${orderId}`)
     orders.value = orders.value.filter(o => o.id !== orderId)
-    saveData()
     toast().success(`Đã xóa đơn hàng #${orderId}`)
   } catch (error) {
     console.error('Error deleting order:', error)
@@ -382,15 +391,22 @@ const deleteOrder = (orderId: string) => {
   }
 }
 
-const saveData = () => {
-  localStorage.setItem('site_orders', JSON.stringify(orders.value))
-}
 
-const resetData = () => {
+
+const resetData = async () => {
   if (confirm('Bạn có chắc muốn xóa sạch tất cả dữ liệu đơn hàng?')) {
-    localStorage.removeItem('site_orders')
-    orders.value = []
-    toast().success('Đã xóa sạch dữ liệu đơn hàng')
+    try {
+      // Delete all orders via API
+      const deletePromises = orders.value.map(order => 
+        axios.delete(`${ORDERS_API_URL}/${order.id}`)
+      )
+      await Promise.all(deletePromises)
+      orders.value = []
+      toast().success('Đã xóa sạch dữ liệu đơn hàng')
+    } catch (error) {
+      console.error('Error resetting data:', error)
+      toast().error('Không thể xóa dữ liệu')
+    }
   }
 }
 

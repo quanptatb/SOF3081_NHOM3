@@ -183,6 +183,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+
+/**
+ * API Configuration
+ */
+const CART_API_URL = 'http://localhost:3000/carts'
+const ORDERS_API_URL = 'http://localhost:3000/orders'
 
 /**
  * Types
@@ -254,13 +261,29 @@ const formatPrice = (price: number): string => {
 }
 
 /**
- * Load cart from localStorage
+ * Load cart from API
  */
-const loadCart = () => {
+const loadCart = async () => {
   try {
-    const cartData = localStorage.getItem('cart')
-    if (cartData) {
-      cartItems.value = JSON.parse(cartData)
+    // Get current user from localStorage (session)
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) {
+      cartItems.value = []
+      isLoading.value = false
+      return
+    }
+
+    const currentUser = JSON.parse(currentUserStr)
+    const userId = currentUser.id
+
+    // Fetch cart from API
+    const response = await axios.get(`${CART_API_URL}?userId=${userId}`)
+    
+    if (response.data && response.data.length > 0) {
+      const cart = response.data[0]
+      cartItems.value = cart.items || []
+    } else {
+      cartItems.value = []
     }
   } catch (error) {
     console.error('Error loading cart:', error)
@@ -341,7 +364,7 @@ const clearError = (field: keyof FormErrors) => {
 }
 
 /**
- * Handle form submission
+ * Handle form submission (API Version)
  */
 const handleSubmit = async () => {
   // Validate form
@@ -355,43 +378,53 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // Get current user
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) {
+      alert('⚠️ Bạn cần đăng nhập để đặt hàng!')
+      isSubmitting.value = false
+      return
+    }
 
-    // Generate order ID
-    const orderId = 'DH' + Math.floor(1000 + Math.random() * 9000)
+    const currentUser = JSON.parse(currentUserStr)
+    const userId = currentUser.id
 
     // Create order object
     const newOrder = {
-      id: orderId,
+      userId: userId,
       customerName: formData.value.name,
       phone: formData.value.phone,
       address: formData.value.address,
       payment: formData.value.payment,
       note: formData.value.note,
       total: totalAmount.value,
-      date: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       status: 'Pending',
       items: cartItems.value
     }
 
-    // Save order to localStorage
-    const existingOrders = JSON.parse(localStorage.getItem('site_orders') || '[]')
-    existingOrders.unshift(newOrder)
-    localStorage.setItem('site_orders', JSON.stringify(existingOrders))
+    // Save order to API
+    const orderResponse = await axios.post(ORDERS_API_URL, newOrder)
+    const orderId = orderResponse.data.id
 
-    // Clear cart
-    localStorage.removeItem('cart')
+    // Clear cart from API
+    const cartResponse = await axios.get(`${CART_API_URL}?userId=${userId}`)
+    if (cartResponse.data && cartResponse.data.length > 0) {
+      const cartId = cartResponse.data[0].id
+      await axios.delete(`${CART_API_URL}/${cartId}`)
+    }
+
+    // Dispatch event to update navbar
     window.dispatchEvent(new Event('storage'))
 
-    // Show success message (you can replace with a toast notification)
-    alert(`✅ Đặt hàng thành công!\n\nMã đơn hàng: ${orderId}\nChúng tôi sẽ liên hệ với bạn sớm nhất!`)
+    // Show success message
+    alert(`✅ Đặt hàng thành công!\n\nMã đơn hàng: #${orderId}\nChúng tôi sẽ liên hệ với bạn sớm nhất!`)
 
     // Redirect to home
     router.push('/')
   } catch (error) {
     console.error('Error submitting order:', error)
-    alert('❌ Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!')
+    alert('❌ Không thể đặt hàng. Vui lòng kiểm tra kết nối và thử lại!')
   } finally {
     isSubmitting.value = false
   }

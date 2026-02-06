@@ -123,6 +123,12 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from '../../composables/useToast'
+import axios from 'axios'
+
+/**
+ * API Configuration
+ */
+const API_URL = 'http://localhost:3000/users'
 
 /**
  * Router
@@ -239,7 +245,7 @@ const validateForm = (): boolean => {
 }
 
 /**
- * Handle Register
+ * Handle Register (API Version)
  */
 const handleRegister = async () => {
   // Validate form
@@ -251,26 +257,24 @@ const handleRegister = async () => {
   isLoading.value = true
 
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-
-    // Check if email already exists
-    if (users.find((u: any) => u.email === form.value.email)) {
+    // Check if email already exists via API
+    const checkResponse = await axios.get(`${API_URL}?email=${form.value.email}`)
+    
+    if (checkResponse.data && checkResponse.data.length > 0) {
       toast().error('Email này đã được đăng ký', '❌ Đăng ký thất bại')
       errors.value.email = 'Email đã tồn tại'
       return
     }
 
-    // Create new user
+    // Create new user via API
     const newUser = {
-      ...form.value,
-      id: Date.now()
+      name: form.value.name,
+      email: form.value.email,
+      password: form.value.password,
+      role: 'user'
     }
 
-    users.push(newUser)
-    localStorage.setItem('users', JSON.stringify(users))
+    await axios.post(API_URL, newUser)
 
     toast().success(
       'Bạn có thể đăng nhập ngay bây giờ!',
@@ -283,7 +287,7 @@ const handleRegister = async () => {
     }, 1000)
   } catch (error) {
     console.error('Register error:', error)
-    toast().error('Có lỗi xảy ra, vui lòng thử lại')
+    toast().error('Không thể kết nối đến server. Vui lòng thử lại!')
   } finally {
     isLoading.value = false
   }

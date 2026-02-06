@@ -191,6 +191,10 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { computed, ref, watch } from 'vue'
+import axios from 'axios'
+
+// API Configuration
+const CART_API_URL = 'http://localhost:3000/carts'
 
 const route = useRoute()
 const id = Number(route.params.id)
@@ -252,35 +256,68 @@ watch(() => route.params.id, () => { currentImageIndex.value = 0 })
 
 const quantity = ref(1)
 
-const addToCart = () => {
-    // 1. Lấy danh sách giỏ hàng hiện tại từ localStorage (nếu chưa có thì tạo mảng rỗng)
-    let cart = JSON.parse(localStorage.getItem('cart')) || []
+const addToCart = async () => {
+    try {
+        // 1. Get current user from localStorage (session)
+        const currentUserStr = localStorage.getItem('currentUser')
+        if (!currentUserStr) {
+            alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!')
+            return
+        }
 
-    // 2. Kiểm tra sản phẩm đã tồn tại trong giỏ chưa
-    const existingProductIndex = cart.findIndex(item => item.id === product.value.id)
+        const currentUser = JSON.parse(currentUserStr)
+        const userId = currentUser.id
 
-    if (existingProductIndex !== -1) {
-        // Nếu có rồi thì tăng số lượng
-        cart[existingProductIndex].qty += quantity.value
-    } else {
-        // Nếu chưa có thì thêm mới vào mảng
-        cart.push({
-            id: product.value.id,
-            name: product.value.name,
-            price: product.value.price,
-            image: product.value.images[0], // Lấy ảnh đầu tiên
-            qty: quantity.value
-        })
+        // 2. Fetch current cart from API
+        const response = await axios.get(`${CART_API_URL}?userId=${userId}`)
+        
+        let cart
+        let cartId
+        
+        if (response.data && response.data.length > 0) {
+            cart = response.data[0]
+            cartId = cart.id
+        } else {
+            // No cart exists, will create new
+            cart = { userId: userId, items: [] }
+            cartId = null
+        }
+
+        // 3. Check if product already exists in cart
+        const existingItemIndex = cart.items.findIndex(item => item.productId === product.value.id)
+        
+        if (existingItemIndex !== -1) {
+            // Product exists, increase quantity
+            cart.items[existingItemIndex].quantity += quantity.value
+        } else {
+            // New product, add to cart
+            cart.items.push({
+                productId: product.value.id,
+                name: product.value.name,
+                price: product.value.price,
+                image: product.value.images[0],
+                quantity: quantity.value
+            })
+        }
+
+        // 4. Save cart to API
+        if (cartId) {
+            // Update existing cart
+            await axios.put(`${CART_API_URL}/${cartId}`, cart)
+        } else {
+            // Create new cart
+            await axios.post(CART_API_URL, cart)
+        }
+
+        // 5. Dispatch event to update navbar
+        window.dispatchEvent(new CustomEvent('cart-updated'))
+
+        // 6. Notify user
+        alert(`Đã thêm sản phẩm vào giỏ hàng!`)
+    } catch (error) {
+        console.error('Error adding to cart:', error)
+        alert('Không thể thêm vào giỏ hàng. Vui lòng thử lại!')
     }
-
-    // 3. Lưu lại mảng mới vào localStorage
-    localStorage.setItem('cart', JSON.stringify(cart))
-
-    // 4. Phát tín hiệu để Navbar cập nhật số lượng ngay lập tức (Quan trọng)
-    window.dispatchEvent(new CustomEvent('cart-updated'))
-
-    // 5. Thông báo cho người dùng
-    alert(`Đã thêm sản phẩm vào giỏ hàng!`)
 }
 </script>
 

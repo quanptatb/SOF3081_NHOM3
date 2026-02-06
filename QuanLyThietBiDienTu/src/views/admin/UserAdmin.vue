@@ -114,6 +114,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
+
+// API Configuration
+const API_URL = 'http://localhost:3000/users';
 
 // State
 const users = ref([]);
@@ -121,20 +125,14 @@ const searchQuery = ref('');
 const showModal = ref(false);
 const editingUser = ref({});
 
-// Load Users from LocalStorage
-onMounted(() => {
-  const storedUsers = localStorage.getItem('users');
-  
-  if (storedUsers) {
-    users.value = JSON.parse(storedUsers);
-  } else {
-    // Seed data giả nếu chưa có (để bạn test cho đẹp)
-    users.value = [
-      { id: 1, name: 'Admin Quân', email: 'admin@gmail.com', role: 'admin', password: '123' },
-      { id: 2, name: 'Nguyễn Văn A', email: 'a@gmail.com', role: 'user', password: '123' },
-      { id: 3, name: 'Trần Thị B', email: 'b@gmail.com', role: 'user', password: '123' },
-    ];
-    localStorage.setItem('users', JSON.stringify(users.value));
+// Load Users from API
+onMounted(async () => {
+  try {
+    const response = await axios.get(API_URL);
+    users.value = response.data;
+  } catch (error) {
+    console.error('Error loading users:', error);
+    alert('Không thể tải danh sách người dùng. Vui lòng kiểm tra kết nối API!');
   }
 });
 
@@ -154,11 +152,17 @@ const getInitials = (name) => {
   return name.charAt(0).toUpperCase();
 };
 
-// Action: Delete User
-const deleteUser = (userToDelete) => {
+// Action: Delete User (API Version)
+const deleteUser = async (userToDelete) => {
   if (confirm(`Bạn có chắc chắn muốn xóa user: ${userToDelete.name}?`)) {
-    users.value = users.value.filter(u => u.email !== userToDelete.email);
-    updateLocalStorage();
+    try {
+      await axios.delete(`${API_URL}/${userToDelete.id}`);
+      users.value = users.value.filter(u => u.id !== userToDelete.id);
+      alert('Xóa thành công!');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Không thể xóa người dùng. Vui lòng thử lại!');
+    }
   }
 };
 
@@ -174,21 +178,25 @@ const closeModal = () => {
   editingUser.value = {};
 };
 
-// Action: Save User
-const saveUser = () => {
-  const index = users.value.findIndex(u => u.email === editingUser.value.email);
-  if (index !== -1) {
-    users.value[index] = { ...editingUser.value }; // Cập nhật lại thông tin
-    updateLocalStorage();
+// Action: Save User (API Version)
+const saveUser = async () => {
+  try {
+    await axios.put(`${API_URL}/${editingUser.value.id}`, editingUser.value);
+    
+    const index = users.value.findIndex(u => u.id === editingUser.value.id);
+    if (index !== -1) {
+      users.value[index] = { ...editingUser.value };
+    }
+    
     alert("Cập nhật thành công!");
     closeModal();
+  } catch (error) {
+    console.error('Error updating user:', error);
+    alert('Không thể cập nhật. Vui lòng thử lại!');
   }
 };
 
-// Helper: Sync to LocalStorage
-const updateLocalStorage = () => {
-  localStorage.setItem('users', JSON.stringify(users.value));
-};
+
 </script>
 
 <style scoped>

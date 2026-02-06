@@ -97,14 +97,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { toast } from '../../composables/useToast'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { toast } from "../../composables/useToast";
+import axios from "axios";
+
+/**
+ * API Configuration
+ */
+const API_URL = 'http://localhost:3000/users'
 
 /**
  * Router
  */
-const router = useRouter()
+const router = useRouter();
 
 /**
  * State
@@ -167,60 +173,66 @@ const validateForm = (): boolean => {
 }
 
 /**
- * Handle Login
+ * Handle Login (API Version)
  */
 const handleLogin = async () => {
   // Validate form
   if (!validateForm()) {
-    toast().warning('Vui lòng kiểm tra lại thông tin')
-    return
+    toast().warning("Vui lòng kiểm tra lại thông tin");
+    return;
   }
 
-  isLoading.value = true
+  isLoading.value = true;
 
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800))
+    // Fetch user from API by email
+    const response = await axios.get(`${API_URL}?email=${email.value}`);
+    
+    // Find user in response
+    const targetUser = response.data && response.data.length > 0 ? response.data[0] : null;
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    const adminAccount = {
-      email: 'admin@gmail.com',
-      password: '123',
-      name: 'Admin',
-      role: 'admin'
-    }
+    // --- BẮT ĐẦU KIỂM TRA TÀI KHOẢN ---
 
-    const allUsers = [...users, adminAccount]
-    const user = allUsers.find(
-      u => u.email === email.value && u.password === password.value
-    )
+    if (!targetUser) {
+      // Trường hợp 1: Không tìm thấy Email -> Báo lỗi "Tài khoản không tồn tại"
+      toast().error(
+        "Tài khoản chưa tồn tại trên hệ thống",
+        "❌ Đăng nhập thất bại"
+      );
+      errors.value.email = "Tài khoản chưa được đăng ký"; // Hiển thị lỗi đỏ ngay dưới ô input
+    } 
+    else if (targetUser.password !== password.value) {
+      // Trường hợp 2: Có Email nhưng sai Password -> Báo lỗi "Sai mật khẩu"
+      toast().error(
+        "Mật khẩu không chính xác",
+        "❌ Đăng nhập thất bại"
+      );
+      errors.value.password = "Mật khẩu không đúng"; // Hiển thị lỗi đỏ ngay dưới ô input
+    } 
+    else {
+      // Trường hợp 3: Đúng cả 2 -> Đăng nhập thành công
+      localStorage.setItem("currentUser", JSON.stringify(targetUser));
 
-    if (user) {
-      localStorage.setItem('currentUser', JSON.stringify(user))
+      toast().success(`Chào mừng ${targetUser.name}!`, "✅ Đăng nhập thành công");
 
-      toast().success(
-        `Chào mừng ${user.name}!`,
-        '✅ Đăng nhập thành công'
-      )
-
-      // Redirect after short delay
+      // Chuyển trang
       setTimeout(() => {
-        if (user.role === 'admin') {
-          router.push('/admin/users')
+        if (targetUser.role === "admin") {
+          router.push("/admin/users");
         } else {
-          router.push('/')
+          router.push("/");
         }
-      }, 500)
-    } else {
-      toast().error('Email hoặc mật khẩu không chính xác', '❌ Đăng nhập thất bại')
+      }, 500);
     }
+    // --- KẾT THÚC KIỂM TRA ---
+
   } catch (error) {
-    console.error('Login error:', error)
-    toast().error('Có lỗi xảy ra, vui lòng thử lại')
+    console.error("Login error:", error);
+    toast().error("Không thể kết nối đến server. Vui lòng thử lại!");
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

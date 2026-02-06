@@ -90,7 +90,7 @@ const currentUser = ref(null);
  * Menu configuration - extracted for better maintainability
  */
 const managementMenu = [
-  { to: "/admin", icon: "📊", label: "Dashboard" },
+  // { to: "/admin", icon: "📊", label: "Dashboard" },
   { to: "/admin/users", icon: "👤", label: "Người dùng" },
   { to: "/admin/products", icon: "💻", label: "Thiết bị" },
 ];

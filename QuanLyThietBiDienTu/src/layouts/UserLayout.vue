@@ -8,14 +8,9 @@
 
         <div class="flex-grow-1 mx-lg-4 d-none d-lg-block">
           <div class="input-group nav-search-group shadow-sm">
-            <input 
-              type="text" 
-              class="form-control border-0 px-3" 
-              placeholder="Bạn tìm gì..." 
-              v-model="navSearch"
-              @input="emitFilter"
-            />
-            
+            <input type="text" class="form-control border-0 px-3" placeholder="Bạn tìm gì..." v-model="navSearch"
+              @input="emitFilter" />
+
             <select class="form-select border-0 border-start nav-select" v-model="navCategory" @change="emitFilter">
               <option value="Tất cả">Danh mục</option>
               <option>CPU</option>
@@ -45,18 +40,25 @@
             <router-link to="/cart" class="btn btn-cart position-relative border-0 text-white text-decoration-none">
               <i class="bi bi-cart3 fs-5"></i>
               <span class="d-none d-md-inline ms-2">Giỏ hàng</span>
-              <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+              <span v-if="cartCount > 0"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ cartCount }}
+              </span>
             </router-link>
 
             <div v-if="currentUser" class="dropdown">
-              <button class="btn btn-user text-white dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+              <button class="btn btn-user text-white dropdown-toggle d-flex align-items-center gap-2" type="button"
+                data-bs-toggle="dropdown">
                 <div class="avatar-circle">{{ currentUser.name.charAt(0).toUpperCase() }}</div>
                 <span class="d-none d-md-inline">{{ currentUser.name }}</span>
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow animate-slide-in">
-                <li v-if="currentUser.role === 'admin'"><router-link to="/admin" class="dropdown-item">Quản trị</router-link></li>
+                <li v-if="currentUser.role === 'admin'"><router-link to="/admin" class="dropdown-item">Quản
+                    trị</router-link></li>
                 <li><router-link to="/profile" class="dropdown-item">Hồ sơ</router-link></li>
-                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
                 <li><button class="dropdown-item text-danger" @click="handleLogout">Đăng xuất</button></li>
               </ul>
             </div>
@@ -84,16 +86,57 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
+
+// API Configuration
+const CART_API_URL = 'http://localhost:3000/carts';
 
 const navSearch = ref('');
 const navCategory = ref('Tất cả');
 const navPrice = ref('Tất cả');
 const currentUser = ref(null);
+const cartCount = ref(0);
+
+// Load cart count from API
+const loadCartCount = async () => {
+  const currentUserStr = localStorage.getItem('currentUser');
+  if (!currentUserStr) {
+    cartCount.value = 0;
+    return;
+  }
+
+  try {
+    const user = JSON.parse(currentUserStr);
+    const response = await axios.get(`${CART_API_URL}?userId=${user.id}`);
+
+    if (response.data && response.data.length > 0) {
+      const cart = response.data[0];
+      cartCount.value = cart.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+    } else {
+      cartCount.value = 0;
+    }
+  } catch (error) {
+    console.error('Error loading cart count:', error);
+    cartCount.value = 0;
+  }
+};
 
 onMounted(() => {
   const stored = localStorage.getItem('currentUser');
   if (stored) currentUser.value = JSON.parse(stored);
+
+  // Load initial cart count
+  loadCartCount();
+
+  // Listen for cart updates
+  window.addEventListener('cart-updated', loadCartCount);
+  window.addEventListener('storage', loadCartCount);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('cart-updated', loadCartCount);
+  window.removeEventListener('storage', loadCartCount);
 });
 
 // 🚀 Phát tín hiệu lọc toàn ứng dụng
@@ -111,8 +154,34 @@ const handleLogout = () => {
 </script>
 
 <style scoped>
-.bg-gradient-primary { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
-.nav-search-group { background: white; border-radius: 8px; overflow: hidden; height: 40px; }
-.nav-select { max-width: 130px; font-size: 13px; background-color: #f8f9fa; cursor: pointer; border-left: 1px solid #dee2e6 !important; }
-.avatar-circle { width: 32px; height: 32px; background: white; color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+.nav-search-group {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 40px;
+}
+
+.nav-select {
+  max-width: 130px;
+  font-size: 13px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  border-left: 1px solid #dee2e6 !important;
+}
+
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  background: white;
+  color: #0d6efd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
 </style>

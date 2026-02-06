@@ -120,6 +120,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+
+/**
+ * API Configuration
+ */
+const CART_API_URL = 'http://localhost:3000/carts'
 
 /**
  * Types
@@ -138,6 +144,7 @@ interface CartItem {
  */
 const router = useRouter()
 const cartItems = ref<CartItem[]>([])
+const currentCartId = ref<number | null>(null)
 const isLoading = ref(true)
 
 /**
@@ -159,13 +166,34 @@ const formatPrice = (price: number): string => {
 }
 
 /**
- * Load cart from localStorage
+ * Load cart from API
  */
-const loadCart = () => {
+const loadCart = async () => {
   try {
-    const cartData = localStorage.getItem('cart')
-    if (cartData) {
-      cartItems.value = JSON.parse(cartData)
+    // Get current user from localStorage (session)
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) {
+      // No user logged in, keep cart empty
+      cartItems.value = []
+      isLoading.value = false
+      return
+    }
+
+    const currentUser = JSON.parse(currentUserStr)
+    const userId = currentUser.id
+
+    // Fetch cart from API
+    const response = await axios.get(`${CART_API_URL}?userId=${userId}`)
+    
+    if (response.data && response.data.length > 0) {
+      // Cart exists for this user
+      const cart = response.data[0]
+      currentCartId.value = cart.id
+      cartItems.value = cart.items || []
+    } else {
+      // No cart yet, create empty cart
+      cartItems.value = []
+      currentCartId.value = null
     }
   } catch (error) {
     console.error('Error loading cart:', error)
@@ -178,12 +206,32 @@ const loadCart = () => {
 }
 
 /**
- * Save cart to localStorage
+ * Save cart to API
  */
-const saveCart = () => {
+const saveCart = async () => {
   try {
-    localStorage.setItem('cart', JSON.stringify(cartItems.value))
-    window.dispatchEvent(new Event('storage'))
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) return
+
+    const currentUser = JSON.parse(currentUserStr)
+    const userId = currentUser.id
+
+    const cartData = {
+      userId: userId,
+      items: cartItems.value
+    }
+
+    if (currentCartId.value) {
+      // Update existing cart
+      await axios.put(`${CART_API_URL}/${currentCartId.value}`, {
+        ...cartData,
+        id: currentCartId.value
+      })
+    } else {
+      // Create new cart
+      const response = await axios.post(CART_API_URL, cartData)
+      currentCartId.value = response.data.id
+    }
   } catch (error) {
     console.error('Error saving cart:', error)
   }
