@@ -1,652 +1,278 @@
 <template>
-  <div class="product-page">
-    <!-- Search Bar -->
-    <section class="search-section">
-      <div class="search-container">
-        <div class="search-wrapper">
-          <i class="bi bi-search search-icon" aria-hidden="true"></i>
-          <input type="text" class="search-input" placeholder="Tìm kiếm sản phẩm theo tên..." v-model="searchQuery"
-            @input="handleSearchInput" aria-label="Tìm kiếm sản phẩm" />
-          <button v-if="searchQuery" class="search-clear" @click="clearSearch" aria-label="Xóa tìm kiếm">
-            <i class="bi bi-x-circle" aria-hidden="true"></i>
-          </button>
+  <div class="container my-2" v-if="products">
+    <div class="row">
+      <div class="col-12">
+        <p class="small text-muted mb-3" v-if="search">
+          Tìm thấy <b>{{ filteredProducts.length }}</b> sản phẩm phù hợp
+        </p>
+
+        <div class="row g-3">
+          <div v-for="p in paginatedProducts" :key="p.id" class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+            <router-link :to="`/productuser/${p.id}`" class="text-decoration-none h-100 d-block">
+              <div class="card product-card-tgdd h-100 border-0 shadow-sm p-2">
+                <div class="product-img-wrap mb-2">
+                  <img :src="p.image" class="img-fluid" loading="lazy" />
+                </div>
+                <div class="card-body p-1">
+                  <h6 class="product-name text-dark mb-2">{{ p.name }}</h6>
+                  <div class="price-box mb-2">
+                    <span class="text-dark fw-bold d-block fs-5">{{ formatPrice(p.price) }}</span>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="text-muted text-decoration-line-through x-small">{{ formatPrice(p.price * 1.2) }}</span>
+                      <span class="text-danger fw-bold x-small">-20%</span>
+                    </div>
+                  </div>
+                  
+                  <div class="bank-promo-section mt-auto pt-2 border-top">
+                    <div class="d-flex gap-1 mb-2 flex-nowrap overflow-hidden justify-content-start">
+                      <div v-for="bank in banks" :key="bank.id" 
+                           class="bank-icon-sm border rounded"
+                           @mouseover="p.hoveredPromo = bank.detail" 
+                           @mouseleave="p.hoveredPromo = ''">
+                        <img :src="bank.logo" class="img-fluid" />
+                      </div>
+                    </div>
+                    <div class="promo-text-holder">
+                      <p class="promo-text-limit text-primary mb-0 animate__animated animate__fadeIn">
+                        {{ p.hoveredPromo || 'Rê chuột xem ưu đãi bank' }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </router-link>
+          </div>
         </div>
+
+        <nav class="mt-5" v-if="totalPages > 1">
+          <ul class="pagination pagination-sm justify-content-center">
+            <li class="page-item" :class="{ disabled: currentPage === 1 }"><button class="page-link" @click="currentPage--">«</button></li>
+            <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }"><button class="page-link" @click="currentPage = page">{{ page }}</button></li>
+            <li class="page-item" :class="{ disabled: currentPage === totalPages }"><button class="page-link" @click="currentPage++">»</button></li>
+          </ul>
+        </nav>
       </div>
-    </section>
-
-    <!-- Main Content -->
-    <section class="content-section">
-      <div class="content-container">
-        <div class="layout-grid">
-          <!-- Sidebar Filter -->
-          <aside class="filter-sidebar" role="complementary">
-            <ProductFilter v-model:category="category" v-model:priceRange="priceRange" />
-          </aside>
-
-          <!-- Products Area -->
-          <main class="products-main" role="main">
-            <!-- Controls Bar -->
-            <div class="controls-bar">
-              <div class="results-info">
-                <span class="results-count" v-if="!isLoading">
-                  {{ resultsSummary }}
-                </span>
-              </div>
-              <div class="controls-actions">
-                <select v-model="sortBy" class="sort-select" aria-label="Sắp xếp sản phẩm">
-                  <option value="default">Mặc định</option>
-                  <option value="name-asc">Tên: A-Z</option>
-                  <option value="name-desc">Tên: Z-A</option>
-                  <option value="price-asc">Giá: Thấp đến cao</option>
-                  <option value="price-desc">Giá: Cao đến thấp</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Loading State -->
-            <div v-if="isLoading" class="loading-state">
-              <div class="spinner"></div>
-              <p>Đang tải sản phẩm...</p>
-            </div>
-
-            <!-- Empty State -->
-            <div v-else-if="filteredProducts.length === 0" class="empty-state">
-              <div class="empty-icon">
-                <i class="bi bi-inbox" aria-hidden="true"></i>
-              </div>
-              <h3 class="empty-title">Không tìm thấy sản phẩm</h3>
-              <p class="empty-description">
-                {{ emptyStateMessage }}
-              </p>
-              <button v-if="hasActiveFilters" class="btn-reset-filters" @click="resetFilters">
-                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                Xóa bộ lọc
-              </button>
-            </div>
-
-            <!-- Products Grid -->
-            <div v-else class="products-grid">
-              <div v-for="product in paginatedProducts" :key="product.id" class="product-item">
-                <ProductCard :product="product" @add-to-cart="handleAddToCart" />
-              </div>
-            </div>
-
-            <!-- Pagination -->
-            <div v-if="totalPages > 1 && !isLoading" class="pagination-wrapper">
-              <AppPagination :current-page="currentPage" :total-pages="totalPages"
-                @update:currentPage="handlePageChange" />
-            </div>
-          </main>
-        </div>
-      </div>
-    </section>
+    </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-// [MODIFIED 1]: Import thư viện Axios để gọi API
-import axios from 'axios' 
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
-// [MODIFIED 2]: Xóa hoặc comment dòng import dữ liệu tĩnh này đi
-// import { products as sourceProducts } from '../data/products'
-
-// Import Components
-import ProductCard from '../components/ProductCard.vue'
-import ProductFilter from '../components/ProductFilter.vue'
-import AppPagination from '../components/AppPagination.vue'
-
-/**
- * State Management
- */
-const searchQuery = ref('')
-const debouncedSearch = ref('')
+const search = ref('')
 const category = ref('Tất cả')
 const priceRange = ref('Tất cả')
-const sortBy = ref('default')
 const currentPage = ref(1)
-const isLoading = ref(true)
+const pageSize = 12
 
-/**
- * Configuration
- */
-const PAGE_SIZE = 9
-const DEBOUNCE_DELAY = 300
-let searchTimeout: ReturnType<typeof setTimeout> | null = null
+// 👂 Nhận tín hiệu từ Navbar
+const handleNavbarFilter = (e) => {
+  search.value = e.detail.search;
+  category.value = e.detail.category;
+  priceRange.value = e.detail.price;
+  currentPage.value = 1;
+};
 
-/**
- * Products Data
- */
-// [MODIFIED 3]: Khởi tạo mảng rỗng thay vì dữ liệu import cứng
-const products = ref([]) 
-
-/**
- * [MODIFIED 4]: Viết hàm lấy dữ liệu từ API
- * Hàm này sẽ gọi Backend (nơi kết nối SQL Server) để lấy danh sách sản phẩm
- */
-const fetchProducts = async () => {
-  // Bật trạng thái loading trước khi gọi
-  isLoading.value = true; 
-  try {
-    // ⚠️ QUAN TRỌNG: Thay URL bên dưới bằng API thực tế của nhóm bạn
-    // Ví dụ: 'https://localhost:7123/api/products' hoặc 'http://localhost:3000/products'
-    const response = await axios.get('http://localhost:3000/products');
-
-    // Gán dữ liệu từ API vào biến products
-    products.value = response.data;
-
-    console.log('Đã tải thành công:', products.value.length, 'sản phẩm');
-  } catch (error) {
-    console.error('Lỗi khi tải danh sách sản phẩm:', error);
-    // Có thể thêm thông báo lỗi cho người dùng (alert hoặc toast)
-  } finally {
-    // Tắt trạng thái loading dù thành công hay thất bại
-    isLoading.value = false;
-  }
-}
-
-/**
- * Debounced Search Handler
- * (Giữ nguyên không đổi)
- */
-const handleSearchInput = () => {
-  if (searchTimeout) {
-    clearTimeout(searchTimeout)
-  }
-  searchTimeout = setTimeout(() => {
-    debouncedSearch.value = searchQuery.value
-  }, DEBOUNCE_DELAY)
-}
-
-/**
- * Clear Search
- * (Giữ nguyên không đổi)
- */
-const clearSearch = () => {
-  searchQuery.value = ''
-  debouncedSearch.value = ''
-}
-
-/**
- * Price Range Matching Logic
- * (Giữ nguyên không đổi)
- */
-const matchesPriceRange = (price: number, range: string): boolean => {
-  switch (range) {
-    case 'Dưới 2 triệu':
-      return price < 2000000
-    case '2 – 5 triệu':
-      return price >= 2000000 && price <= 5000000
-    case 'Trên 5 triệu':
-      return price > 5000000
-    default:
-      return true
-  }
-}
-
-/**
- * Filtered Products
- * (Giữ nguyên logic lọc Client-side này)
- * Vì products.value đã được điền dữ liệu từ API, computed này sẽ tự động chạy lại
- */
-const filteredProducts = computed(() => {
-  let filtered = products.value.filter((product: any) => { // Thêm type any hoặc interface nếu cần
-    const matchName = product.name
-      .toLowerCase()
-      .includes(debouncedSearch.value.toLowerCase())
-    const matchCategory =
-      category.value === 'Tất cả' || product.category === category.value
-    
-    // Lưu ý: Đảm bảo dữ liệu từ API trả về trường 'price' là số (number)
-    const matchPrice = matchesPriceRange(product.price, priceRange.value)
-
-    return matchName && matchCategory && matchPrice
-  })
-
-  // Apply sorting
-  if (sortBy.value !== 'default') {
-    filtered = [...filtered].sort((a: any, b: any) => {
-      switch (sortBy.value) {
-        case 'name-asc':
-          return a.name.localeCompare(b.name)
-        case 'name-desc':
-          return b.name.localeCompare(a.name)
-        case 'price-asc':
-          return a.price - b.price
-        case 'price-desc':
-          return b.price - a.price
-        default:
-          return 0
-      }
-    })
-  }
-
-  return filtered
-})
-
-/**
- * Pagination & UI Helpers
- * (Giữ nguyên không đổi)
- */
-const totalPages = computed(() =>
-  Math.ceil(filteredProducts.value.length / PAGE_SIZE)
-)
-
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
-  return filteredProducts.value.slice(start, start + PAGE_SIZE)
-})
-
-const hasActiveFilters = computed(() => {
-  return (
-    debouncedSearch.value !== '' ||
-    category.value !== 'Tất cả' ||
-    priceRange.value !== 'Tất cả' ||
-    sortBy.value !== 'default'
-  )
-})
-
-const resultsSummary = computed(() => {
-  const count = filteredProducts.value.length
-  if (count === 0) return 'Không có sản phẩm'
-  if (count === 1) return '1 sản phẩm'
-  return `${count} sản phẩm`
-})
-
-const emptyStateMessage = computed(() => {
-  if (debouncedSearch.value) {
-    return `Không tìm thấy sản phẩm nào với từ khóa "${debouncedSearch.value}"`
-  }
-  if (category.value !== 'Tất cả' || priceRange.value !== 'Tất cả') {
-    return 'Không có sản phẩm nào phù hợp với bộ lọc của bạn'
-  }
-  return 'Không có sản phẩm nào'
-})
-
-/**
- * Event Handlers
- * (Giữ nguyên handlePageChange, resetFilters, handleAddToCart)
- */
-const handlePageChange = (page: number) => {
-  currentPage.value = page
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
-const resetFilters = () => {
-  searchQuery.value = ''
-  debouncedSearch.value = ''
-  category.value = 'Tất cả'
-  priceRange.value = 'Tất cả'
-  sortBy.value = 'default'
-  currentPage.value = 1
-}
-
-const handleAddToCart = (product: any) => {
-  try {
-    const cartData = localStorage.getItem('cart')
-    const cart = cartData ? JSON.parse(cartData) : []
-    const existingIndex = cart.findIndex((item: any) => item.id === product.id)
-
-    if (existingIndex >= 0) {
-      cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + 1
-    } else {
-      cart.push({ ...product, quantity: 1 })
-    }
-
-    localStorage.setItem('cart', JSON.stringify(cart))
-    window.dispatchEvent(new Event('storage'))
-    console.log('Đã thêm vào giỏ hàng:', product.name)
-  } catch (error) {
-    console.error('Lỗi khi thêm vào giỏ hàng:', error)
-  }
-}
-
-/**
- * Watchers
- * (Giữ nguyên)
- */
-watch([debouncedSearch, category, priceRange, sortBy], () => {
-  currentPage.value = 1
-})
-
-/**
- * Lifecycle
- */
 onMounted(() => {
-  // [MODIFIED 5]: Gọi hàm lấy dữ liệu thật thay vì setTimeout giả lập
-  fetchProducts(); 
+  window.addEventListener('nav-search-filter', handleNavbarFilter);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('nav-search-filter', handleNavbarFilter);
+});
+
+// (Dữ liệu banks và products giữ nguyên như code cũ của bạn bên dưới)
+const banks = [
+  { id: 'scb', logo: '/src/assets/images/scb.png', detail: 'Giảm 800k qua thẻ Visa SCB' },
+  { id: 'ocb', logo: '/src/assets/images/ocb.png', detail: 'Giảm 500k qua thẻ OCB' },
+  { id: 'kredivo', logo: '/src/assets/images/kredivo.png', detail: 'Giảm 5% tối đa 200k' },
+  { id: 'homepay', logo: '/src/assets/images/homepay.png', detail: 'Giảm 5% qua HomePayLater' }
+];
+
+const products = ref([
+  { id: 1, name: 'CPU Intel i5 12400F', category: 'CPU', price: 4500000, image: '/src/assets/images/inteli5.png', hoveredPromo: '' },
+  { id: 2, name: 'CPU Intel i7 13700K', category: 'CPU', price: 6500000, image: '/src/assets/images/inteli7.png', hoveredPromo: '' },
   
-  // Bỏ đoạn code cũ này đi:
-  // setTimeout(() => { isLoading.value = false }, 500)
-})
+  { id: 3, name: 'CPU Ryzen 5 5600X', category: 'CPU', price: 4200000, image: '/src/assets/images/ryzen5.png', hoveredPromo: '' },
+
+  { id: 4, name: 'Bộ vi xử lý AMD Ryzen 7 8700G / 4.2GHz Boost 5.1GHz / 8 nhân 16 luồng / 24MB / AM5', category: 'CPU', price: 7200000, image: '/src/assets/images/ryzen7.png', hoveredPromo: '' },
+
+  { id: 5, name: 'Ram Corsair Vengeance LPX 8GB (1x8GB) 3200 (CMK8GX4M1E3200C16)', category: 'RAM', price: 800000, image: '/src/assets/images/corsair8.png', hoveredPromo: '' },
+
+  { id: 6, name: 'RAM Laptop Kingston 1.2V 8GB 3200MHz KVR32S22S8/8', category: 'RAM', price: 1200000, image: '/src/assets/images/corsair16.png', hoveredPromo: '' },
+
+  { id: 7, name: 'RAM Kingston 8GB', category: 'RAM', price: 750000, image: '/src/assets/images/kingston8.png', hoveredPromo: '' },
+
+  { id: 8, name: 'RAM Kingston 16GB', category: 'RAM', price: 1300000, image: '/src/assets/images/kingston16.png', hoveredPromo: '' },
+
+
+
+  { id: 9, name: 'MSI RTX 3050 VENTUS 2X 6G OC', category: 'GPU', price: 6200000, image: '/src/assets/images/rtx3050.png', hoveredPromo: '' },
+
+  { id: 10, name: 'MSI RTX 3060 VENTUS 2X OC 12 GB (12GB GDDR6, 192-bit, HDMI +DP, 1x8-pin)', category: 'GPU', price: 7800000, image: '/src/assets/images/rtx3060.png', hoveredPromo: '' },
+
+  { id: 11, name: 'Card màn hình ASUS Dual GeForce RTX 4060 V2 OC Edition 8GB GDDR6 (DUAL-RTX4060-O8G-V2)', category: 'GPU', price: 9500000, image: '/src/assets/images/rtx4060.png', hoveredPromo: '' },
+
+  { id: 12, name: 'MSI GeForce GTX 1660 Ti ARMOR 6G OC', category: 'GPU', price: 4800000, image: '/src/assets/images/gtx1660.png', hoveredPromo: '' },
+
+
+
+  { id: 13, name: 'SSD Transcend 512GB', category: 'SSD', price: 1400000, image: '/src/assets/images/trans512.png', hoveredPromo: '' },
+
+  { id: 14, name: 'SSD Kingston 1TB', category: 'SSD', price: 2200000, image: '/src/assets/images/kingston1tb.png', hoveredPromo: '' },
+
+  { id: 15, name: 'HDD WD 1TB', category: 'HDD', price: 900000, image: '/src/assets/images/wd1tb.png', hoveredPromo: '' },
+
+  { id: 16, name: 'HDD Seagate 2TB', category: 'HDD', price: 1600000, image: '/src/assets/images/seagate2tb.png', hoveredPromo: '' },
+
+
+
+  { id: 17, name: 'SSD Samsung 980 500GB', category: 'SSD', price: 1800000, image: '/src/assets/images/samsung980.png', hoveredPromo: '' },
+
+  { id: 18, name: 'SSD Samsung 970 EVO 1TB', category: 'SSD', price: 2900000, image: '/src/assets/images/samsung970.png', hoveredPromo: '' },
+
+  { id: 19, name: 'HDD Toshiba 1TB', category: 'HDD', price: 850000, image: '/src/assets/images/toshiba1tb.png', hoveredPromo: '' },
+
+  { id: 20, name: 'HDD Seagate 4TB', category: 'HDD', price: 2900000, image: '/src/assets/images/seagate4tb.png', hoveredPromo: '' },
+]);
+
+const formatPrice = (price) => price.toLocaleString('vi-VN') + ' đ';
+
+const filteredProducts = computed(() => {
+  return products.value.filter(p => {
+    const mName = p.name.toLowerCase().includes(search.value.toLowerCase());
+    const mCat = category.value === 'Tất cả' || p.category === category.value;
+    const mPrice = priceRange.value === 'Tất cả' || 
+                   (priceRange.value === 'Dưới 2 triệu' && p.price < 2000000) || 
+                   (priceRange.value === '2 – 5 triệu' && p.price >= 2000000 && p.price <= 5000000) || 
+                   (priceRange.value === 'Trên 5 triệu' && p.price > 5000000);
+    return mName && mCat && mPrice;
+  });
+});
+
+const totalPages = computed(() => Math.ceil(filteredProducts.value.length / pageSize));
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  return filteredProducts.value.slice(start, start + pageSize);
+});
 </script>
 
 <style scoped>
-/* CSS Custom Properties */
-:root {
-  --primary-color: #0d6efd;
-  --secondary-color: #6c757d;
-  --success-color: #28a745;
-  --danger-color: #dc3545;
-  --light-color: #f8f9fa;
-  --dark-color: #212529;
-  --border-color: #dee2e6;
-  --transition-speed: 0.3s;
-  --border-radius: 8px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+.product-card-tgdd { border-radius: 12px; transition: 0.3s; background: #fff; }
+.product-card-tgdd:hover { transform: translateY(-5px); box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important; }
+.product-img-wrap { height: 160px; display: flex; align-items: center; justify-content: center; padding: 10px; }
+.product-name { font-size: 14px; height: 2.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.bank-icon-sm { width: 40px; height: 24px; padding: 2px; cursor: pointer; }
+.promo-text-limit { font-size: 11px; height: 2.4rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.promo-text-holder { min-height: 2.4rem; display: flex; align-items: center; }
+
+
+.product-card-tgdd { 
+  border-radius: 12px; 
+  transition: all 0.3s ease; 
+  background: #fff; 
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Layout */
-.product-page {
-  min-height: 100vh;
-  background: var(--light-color);
+.product-card-tgdd:hover { 
+  transform: translateY(-5px); 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important; 
 }
 
-/* Search Section */
-.search-section {
-  background: white;
-  padding: 1.5rem 0;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.search-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.search-wrapper {
-  position: relative;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--secondary-color);
-  font-size: 1.125rem;
-  pointer-events: none;
-}
-
-.search-input {
+.product-img-wrap { 
   width: 100%;
-  padding: 0.875rem 3rem 0.875rem 3rem;
-  border: 2px solid var(--border-color);
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  transition: all var(--transition-speed) ease;
+  height: 180px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  padding: 15px;
+  background: #fff;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+.product-img-wrap img { 
+  max-width: 100%; 
+  max-height: 100%; 
+  object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
-.search-clear {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
+.product-card-tgdd:hover .product-img-wrap img {
+  transform: scale(1.05);
+}
+
+/* --- THÔNG TIN TÊN & GIÁ --- */
+.product-name { 
+  font-size: 14px; 
+  font-weight: 500;
+  height: 2.8rem; 
+  line-height: 1.4rem;
+  overflow: hidden; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical; 
+  color: #333;
+}
+
+.price-box .fs-5 {
+  font-size: 1.1rem !important;
+}
+
+/* --- FIX LỖI BOX NGÂN HÀNG --- */
+.bank-icon-sm { 
+  width: 38px; /* Cố định độ rộng */
+  height: 24px; /* Cố định độ cao */
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  background: #fff;
+  cursor: pointer;
+  padding: 2px;
+  overflow: hidden;
+  flex-shrink: 0; /* Không cho phép co lại */
+}
+
+.bank-icon-sm img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: contain; /* Logo bank luôn nằm gọn trong ô */
+}
+
+.bank-icon-sm:hover { 
+  border-color: #2f80ed !important; 
+}
+
+/* --- FIX LỖI TEXT ƯU ĐÃI (DẤU 3 CHẤM) --- */
+.promo-text-holder { 
+  min-height: 2.4rem; /* Giữ chỗ để card không bị nhảy khi hover */
+  display: flex; 
+  align-items: center; 
+  margin-top: 5px;
+}
+
+.promo-text-limit { 
+  font-size: 11px; 
+  line-height: 1.2rem;
+  height: 2.4rem; /* Đúng bằng 2 dòng */
+  overflow: hidden; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical; 
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+/* Pagination tinh chỉnh */
+.page-link {
   border: none;
-  color: var(--secondary-color);
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  transition: color var(--transition-speed) ease;
+  color: #333;
+  margin: 0 2px;
+  border-radius: 4px !important;
 }
 
-.search-clear:hover {
-  color: var(--danger-color);
-}
-
-/* Content Section */
-.content-section {
-  padding: 0 0 3rem;
-}
-
-.content-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.layout-grid {
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 2rem;
-}
-
-/* Filter Sidebar */
-.filter-sidebar {
-  position: sticky;
-  top: 1rem;
-  height: fit-content;
-}
-
-/* Products Main */
-.products-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Controls Bar */
-.controls-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-}
-
-.results-info {
-  display: flex;
-  align-items: center;
-}
-
-.results-count {
-  font-weight: 600;
-  color: var(--dark-color);
-}
-
-.controls-actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.sort-select {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  background: white;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: border-color var(--transition-speed) ease;
-}
-
-.sort-select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-/* Loading State */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border-color);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Empty State */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-}
-
-.empty-icon {
-  font-size: 4rem;
-  color: var(--secondary-color);
-  margin-bottom: 1rem;
-  opacity: 0.5;
-}
-
-.empty-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--dark-color);
-  margin-bottom: 0.5rem;
-}
-
-.empty-description {
-  color: var(--secondary-color);
-  margin-bottom: 1.5rem;
-}
-
-.btn-reset-filters {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-speed) ease;
-}
-
-.btn-reset-filters:hover {
-  background: #0a58ca;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Products Grid */
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  animation: fadeIn 0.5s ease-out;
-}
-
-.product-item {
-  animation: slideUp 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Pagination */
-.pagination-wrapper {
-  display: flex;
-  justify-content: center;
-  padding: 2rem 0 1rem;
-}
-
-/* Responsive Design */
-@media (max-width: 992px) {
-  .layout-grid {
-    grid-template-columns: 200px 1fr;
-    gap: 1.5rem;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .layout-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-sidebar {
-    position: static;
-  }
-
-  .controls-bar {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .controls-actions {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .sort-select {
-    width: 100%;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-}
-
-@media (max-width: 576px) {
-  .search-section {
-    padding: 1rem 0;
-  }
-
-  .products-grid {
-    grid-template-columns: 1fr;
-  }
+.page-item.active .page-link {
+  background-color: #2f80ed;
+  color: #fff;
 }
 </style>

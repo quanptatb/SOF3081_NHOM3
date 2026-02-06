@@ -359,12 +359,4 @@ const handleAddToCart = () => {
   align-items: center;
   justify-content: center;
 }
-.product-title {
-  /* ... các code cũ ... */
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* CSS cũ cho Chrome/Safari */
-  line-clamp: 2;         /* THÊM DÒNG NÀY: CSS chuẩn để hết cảnh báo */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 </style>

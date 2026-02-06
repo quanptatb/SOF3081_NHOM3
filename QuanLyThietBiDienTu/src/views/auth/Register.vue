@@ -1,12 +1,14 @@
 <template>
   <div class="auth-page">
     <div class="auth-container">
+      <!-- Left Side - Form -->
       <div class="auth-form-container">
         <div class="auth-form">
           <h1 class="form-title">Đăng ký tài khoản</h1>
           <p class="form-subtitle">Tạo tài khoản mới để bắt đầu mua sắm</p>
 
           <form @submit.prevent="handleRegister" novalidate>
+            <!-- Name Field -->
             <div class="form-group">
               <label for="name" class="form-label">
                 Họ và tên <span class="required">*</span>
@@ -20,6 +22,7 @@
               <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
             </div>
 
+            <!-- Email Field -->
             <div class="form-group">
               <label for="email" class="form-label">
                 Email <span class="required">*</span>
@@ -33,6 +36,7 @@
               <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
             </div>
 
+            <!-- Password Field -->
             <div class="form-group">
               <label for="password" class="form-label">
                 Mật khẩu <span class="required">*</span>
@@ -49,16 +53,17 @@
                 </button>
               </div>
               <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
-              
               <div class="password-strength" v-if="form.password">
                 <div class="strength-bar" :class="passwordStrengthClass"></div>
                 <span class="strength-text">{{ passwordStrengthText }}</span>
               </div>
             </div>
 
+            <!-- Submit Button -->
             <button type="submit" class="btn-submit" :disabled="isLoading">
-              <span v-if="!isLoading" class="fw-bold">
-                Đăng ký ngay
+              <span v-if="!isLoading">
+                <i class="bi bi-person-plus" aria-hidden="true"></i>
+                Đăng ký
               </span>
               <span v-else>
                 <i class="bi bi-arrow-repeat spinning" aria-hidden="true"></i>
@@ -67,19 +72,22 @@
             </button>
           </form>
 
+          <!-- Divider -->
           <div class="divider">
             <span>hoặc</span>
           </div>
 
+          <!-- Login Link -->
           <div class="auth-footer">
-            <span class="text-muted">Đã có tài khoản?</span>
-            <router-link to="/login" class="login-link">
+            <p>Đã có tài khoản?</p>
+            <router-link to="/login" class="link-secondary">
               Đăng nhập ngay
             </router-link>
           </div>
         </div>
       </div>
 
+      <!-- Right Side - Illustration -->
       <div class="auth-illustration">
         <div class="illustration-content">
           <div class="logo">
@@ -181,25 +189,20 @@ const validateName = (): boolean => {
 }
 
 const validateEmail = (): boolean => {
-  // Regex chặt chẽ hơn:
-  // 1. Phải bắt đầu bằng chữ hoặc số
-  // 2. Tên miền phải hợp lệ
-  // 3. Đuôi tên miền (TLD) phải từ 2 ký tự trở lên (ví dụ .vn, .com) và là chữ cái
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   if (!form.value.email.trim()) {
-    errors.value.email = 'Vui lòng nhập email';
-    return false;
+    errors.value.email = 'Vui lòng nhập email'
+    return false
   }
 
-  // Kiểm tra Regex
   if (!emailRegex.test(form.value.email)) {
-    errors.value.email = 'Email không hợp lệ (ví dụ: user@domain.com)';
-    return false;
+    errors.value.email = 'Email không hợp lệ'
+    return false
   }
 
-  delete errors.value.email;
-  return true;
+  delete errors.value.email
+  return true
 }
 
 const validatePassword = (): boolean => {
@@ -239,6 +242,7 @@ const validateForm = (): boolean => {
  * Handle Register
  */
 const handleRegister = async () => {
+  // Validate form
   if (!validateForm()) {
     toast().warning('Vui lòng kiểm tra lại thông tin')
     return
@@ -247,16 +251,19 @@ const handleRegister = async () => {
   isLoading.value = true
 
   try {
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 800))
 
     const users = JSON.parse(localStorage.getItem('users') || '[]')
 
+    // Check if email already exists
     if (users.find((u: any) => u.email === form.value.email)) {
       toast().error('Email này đã được đăng ký', '❌ Đăng ký thất bại')
       errors.value.email = 'Email đã tồn tại'
       return
     }
 
+    // Create new user
     const newUser = {
       ...form.value,
       id: Date.now()
@@ -270,6 +277,7 @@ const handleRegister = async () => {
       '✅ Đăng ký thành công'
     )
 
+    // Redirect after short delay
     setTimeout(() => {
       router.push('/login')
     }, 1000)
@@ -287,8 +295,6 @@ const handleRegister = async () => {
 :root {
   --primary-color: #0d6efd;
   --primary-hover: #0a58ca;
-  --purple-color: #5a32a3; /* Tím chủ đạo */
-  --purple-hover: #482585;
   --success-color: #28a745;
   --danger-color: #dc3545;
   --warning-color: #ffc107;
@@ -325,8 +331,15 @@ const handleRegister = async () => {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Form Side */
@@ -366,9 +379,13 @@ const handleRegister = async () => {
   color: var(--dark-color);
 }
 
-.required { color: var(--danger-color); }
+.required {
+  color: var(--danger-color);
+}
 
-.input-wrapper { position: relative; }
+.input-wrapper {
+  position: relative;
+}
 
 .input-icon {
   position: absolute;
@@ -388,14 +405,15 @@ const handleRegister = async () => {
   transition: all 0.3s ease;
 }
 
-/* Focus màu tím */
 .form-input:focus {
   outline: none;
-  border-color: var(--purple-color);
-  box-shadow: 0 0 0 0.2rem rgba(90, 50, 163, 0.25);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
-.form-input.invalid { border-color: var(--danger-color); }
+.form-input.invalid {
+  border-color: var(--danger-color);
+}
 
 .password-toggle {
   position: absolute;
@@ -411,7 +429,9 @@ const handleRegister = async () => {
   transition: color 0.3s ease;
 }
 
-.password-toggle:hover { color: var(--purple-color); }
+.password-toggle:hover {
+  color: var(--primary-color);
+}
 
 .error-message {
   display: block;
@@ -421,23 +441,42 @@ const handleRegister = async () => {
 }
 
 /* Password Strength */
-.password-strength { margin-top: 0.5rem; }
+.password-strength {
+  margin-top: 0.5rem;
+}
+
 .strength-bar {
   height: 4px;
   border-radius: 2px;
   transition: all 0.3s ease;
   margin-bottom: 0.25rem;
 }
-.strength-bar.weak { width: 33%; background: var(--danger-color); }
-.strength-bar.medium { width: 66%; background: var(--warning-color); }
-.strength-bar.strong { width: 100%; background: var(--success-color); }
-.strength-text { font-size: 0.75rem; color: var(--text-muted); }
 
-/* Submit Button - Màu Tím */
+.strength-bar.weak {
+  width: 33%;
+  background: var(--danger-color);
+}
+
+.strength-bar.medium {
+  width: 66%;
+  background: var(--warning-color);
+}
+
+.strength-bar.strong {
+  width: 100%;
+  background: var(--success-color);
+}
+
+.strength-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Submit Button */
 .btn-submit {
   width: 100%;
   padding: 1rem;
-  background: #5a32a3; /* Màu tím */
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -449,28 +488,35 @@ const handleRegister = async () => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-top: 2rem;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #482585;
+  background: var(--primary-hover);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
-.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
-.fw-bold { font-weight: bold; }
+.spinning {
+  animation: spin 1s linear infinite;
+}
 
-.spinning { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Divider */
 .divider {
   position: relative;
   text-align: center;
-  margin: 1.5rem 0;
+  margin: 2rem 0;
   font-size: 0.875rem;
   color: var(--text-muted);
 }
@@ -491,25 +537,25 @@ const handleRegister = async () => {
   padding: 0 1rem;
 }
 
-/* Footer Links - Đã cập nhật */
+/* Footer Links */
 .auth-footer {
   text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.95rem;
 }
 
-.text-muted { color: #6c757d; }
+.auth-footer p {
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
 
-.login-link {
-  color: #5a32a3; /* Màu tím chữ */
-  font-weight: 600;
+.link-secondary {
+  color: var(--primary-color);
   text-decoration: none;
-  margin-left: 5px;
-  transition: color 0.2s;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
-.login-link:hover {
-  color: #38206b;
+.link-secondary:hover {
+  color: var(--primary-hover);
   text-decoration: underline;
 }
 
@@ -523,7 +569,9 @@ const handleRegister = async () => {
   color: white;
 }
 
-.illustration-content { text-align: center; }
+.illustration-content {
+  text-align: center;
+}
 
 .logo {
   width: 80px;
@@ -574,14 +622,30 @@ const handleRegister = async () => {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .auth-container { grid-template-columns: 1fr; }
-  .auth-illustration { display: none; }
-  .auth-form-container { padding: 2rem 1.5rem; }
-  .form-title { font-size: 1.75rem; }
+  .auth-container {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-illustration {
+    display: none;
+  }
+
+  .auth-form-container {
+    padding: 2rem 1.5rem;
+  }
+
+  .form-title {
+    font-size: 1.75rem;
+  }
 }
 
 @media (max-width: 480px) {
-  .auth-page { padding: 1rem 0.5rem; }
-  .auth-form-container { padding: 1.5rem 1rem; }
+  .auth-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .auth-form-container {
+    padding: 1.5rem 1rem;
+  }
 }
 </style>

@@ -1,6 +1,7 @@
 <template>
   <div class="auth-page">
     <div class="auth-container">
+      <!-- Left Side - Illustration -->
       <div class="auth-illustration">
         <div class="illustration-content">
           <div class="logo">
@@ -25,25 +26,28 @@
         </div>
       </div>
 
+      <!-- Right Side - Login Form -->
       <div class="auth-form-container">
         <div class="auth-form">
           <h1 class="form-title">Đăng nhập</h1>
           <p class="form-subtitle">Nhập thông tin để truy cập tài khoản</p>
 
           <form @submit.prevent="handleLogin" novalidate>
+            <!-- Email Field -->
             <div class="form-group">
               <label for="email" class="form-label">
                 Email <span class="required">*</span>
               </label>
               <div class="input-wrapper">
                 <i class="bi bi-envelope input-icon" aria-hidden="true"></i>
-                <input id="email" v-model="email" type="email" class="form-input" :class="{ invalid: errors.email }"
+                <input id="email" v-model="email" type="email" class="form-input" :class="{ 'invalid': errors.email }"
                   placeholder="example@email.com" @blur="validateField('email')" @input="clearError('email')"
                   autocomplete="email" />
               </div>
               <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
             </div>
 
+            <!-- Password Field -->
             <div class="form-group">
               <label for="password" class="form-label">
                 Mật khẩu <span class="required">*</span>
@@ -51,7 +55,7 @@
               <div class="input-wrapper">
                 <i class="bi bi-lock input-icon" aria-hidden="true"></i>
                 <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" class="form-input"
-                  :class="{ invalid: errors.password }" placeholder="Nhập mật khẩu" @blur="validateField('password')"
+                  :class="{ 'invalid': errors.password }" placeholder="Nhập mật khẩu" @blur="validateField('password')"
                   @input="clearError('password')" autocomplete="current-password" />
                 <button type="button" class="password-toggle" @click="showPassword = !showPassword"
                   :aria-label="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
@@ -61,8 +65,12 @@
               <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
             </div>
 
-            <button type="submit" class="btn-submit custom-purple-btn" :disabled="isLoading">
-              <span v-if="!isLoading" class="fw-bold"> Đăng nhập ngay </span>
+            <!-- Submit Button -->
+            <button type="submit" class="btn-submit" :disabled="isLoading">
+              <span v-if="!isLoading">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                Đăng nhập
+              </span>
               <span v-else>
                 <i class="bi bi-arrow-repeat spinning" aria-hidden="true"></i>
                 Đang xử lý...
@@ -70,13 +78,15 @@
             </button>
           </form>
 
+          <!-- Divider -->
           <div class="divider">
             <span>hoặc</span>
           </div>
 
+          <!-- Register Link -->
           <div class="auth-footer">
-            <span class="text-muted">Chưa có tài khoản?</span>
-            <router-link to="/register" class="register-link">
+            <p>Chưa có tài khoản?</p>
+            <router-link to="/register" class="link-secondary">
               Đăng ký ngay
             </router-link>
           </div>
@@ -87,147 +97,130 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { toast } from "../../composables/useToast";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { toast } from '../../composables/useToast'
 
 /**
  * Router
  */
-const router = useRouter();
+const router = useRouter()
 
 /**
  * State
  */
-const email = ref("");
-const password = ref("");
-const showPassword = ref(false);
-const isLoading = ref(false);
-const errors = ref<{ email?: string; password?: string }>({});
+const email = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const isLoading = ref(false)
+const errors = ref < { email?: string; password?: string } > ({})
 
 /**
  * Validation
  */
 const validateEmail = (): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   if (!email.value.trim()) {
-    errors.value.email = "Vui lòng nhập email";
-    return false;
+    errors.value.email = 'Vui lòng nhập email'
+    return false
   }
 
   if (!emailRegex.test(email.value)) {
-    errors.value.email = "Email không hợp lệ";
-    return false;
+    errors.value.email = 'Email không hợp lệ'
+    return false
   }
 
-  delete errors.value.email;
-  return true;
-};
+  delete errors.value.email
+  return true
+}
 
 const validatePassword = (): boolean => {
   if (!password.value) {
-    errors.value.password = "Vui lòng nhập mật khẩu";
-    return false;
+    errors.value.password = 'Vui lòng nhập mật khẩu'
+    return false
   }
 
   if (password.value.length < 3) {
-    errors.value.password = "Mật khẩu phải có ít nhất 3 ký tự";
-    return false;
+    errors.value.password = 'Mật khẩu phải có ít nhất 3 ký tự'
+    return false
   }
 
-  delete errors.value.password;
-  return true;
-};
+  delete errors.value.password
+  return true
+}
 
-const validateField = (field: "email" | "password") => {
-  if (field === "email") return validateEmail();
-  if (field === "password") return validatePassword();
-  return true;
-};
+const validateField = (field: 'email' | 'password') => {
+  if (field === 'email') return validateEmail()
+  if (field === 'password') return validatePassword()
+  return true
+}
 
-const clearError = (field: "email" | "password") => {
-  delete errors.value[field];
-};
+const clearError = (field: 'email' | 'password') => {
+  delete errors.value[field]
+}
 
 const validateForm = (): boolean => {
-  const emailValid = validateEmail();
-  const passwordValid = validatePassword();
-  return emailValid && passwordValid;
-};
+  const emailValid = validateEmail()
+  const passwordValid = validatePassword()
+  return emailValid && passwordValid
+}
 
 /**
- * Handle Login (LOGIC MỚI ĐÃ SỬA)
+ * Handle Login
  */
 const handleLogin = async () => {
   // Validate form
   if (!validateForm()) {
-    toast().warning("Vui lòng kiểm tra lại thông tin");
-    return;
+    toast().warning('Vui lòng kiểm tra lại thông tin')
+    return
   }
 
-  isLoading.value = true;
+  isLoading.value = true
 
   try {
     // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 800))
 
-    // Lấy danh sách user từ localStorage + Admin mặc định
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const users = JSON.parse(localStorage.getItem('users') || '[]')
     const adminAccount = {
-      email: "admin@gmail.com",
-      password: "123",
-      name: "Admin",
-      role: "admin",
-    };
-
-    const allUsers = [...users, adminAccount];
-
-    // --- BẮT ĐẦU KIỂM TRA TÀI KHOẢN ---
-
-    // 1. Tìm user có Email trùng khớp trước
-    const targetUser = allUsers.find((u: any) => u.email === email.value);
-
-    if (!targetUser) {
-      // Trường hợp 1: Không tìm thấy Email -> Báo lỗi "Tài khoản không tồn tại"
-      toast().error(
-        "Tài khoản chưa tồn tại trên hệ thống",
-        "❌ Đăng nhập thất bại"
-      );
-      errors.value.email = "Tài khoản chưa được đăng ký"; // Hiển thị lỗi đỏ ngay dưới ô input
-    } 
-    else if (targetUser.password !== password.value) {
-      // Trường hợp 2: Có Email nhưng sai Password -> Báo lỗi "Sai mật khẩu"
-      toast().error(
-        "Mật khẩu không chính xác",
-        "❌ Đăng nhập thất bại"
-      );
-      errors.value.password = "Mật khẩu không đúng"; // Hiển thị lỗi đỏ ngay dưới ô input
-    } 
-    else {
-      // Trường hợp 3: Đúng cả 2 -> Đăng nhập thành công
-      localStorage.setItem("currentUser", JSON.stringify(targetUser));
-
-      toast().success(`Chào mừng ${targetUser.name}!`, "✅ Đăng nhập thành công");
-
-      // Chuyển trang
-      setTimeout(() => {
-        if (targetUser.role === "admin") {
-          router.push("/admin/users");
-        } else {
-          router.push("/");
-        }
-      }, 500);
+      email: 'admin@gmail.com',
+      password: '123',
+      name: 'Admin',
+      role: 'admin'
     }
-    // --- KẾT THÚC KIỂM TRA ---
 
+    const allUsers = [...users, adminAccount]
+    const user = allUsers.find(
+      u => u.email === email.value && u.password === password.value
+    )
+
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user))
+
+      toast().success(
+        `Chào mừng ${user.name}!`,
+        '✅ Đăng nhập thành công'
+      )
+
+      // Redirect after short delay
+      setTimeout(() => {
+        if (user.role === 'admin') {
+          router.push('/admin/users')
+        } else {
+          router.push('/')
+        }
+      }, 500)
+    } else {
+      toast().error('Email hoặc mật khẩu không chính xác', '❌ Đăng nhập thất bại')
+    }
   } catch (error) {
-    console.error("Login error:", error);
-    toast().error("Có lỗi xảy ra, vui lòng thử lại");
+    console.error('Login error:', error)
+    toast().error('Có lỗi xảy ra, vui lòng thử lại')
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 </script>
 
 <style scoped>
@@ -235,8 +228,6 @@ const handleLogin = async () => {
 :root {
   --primary-color: #0d6efd;
   --primary-hover: #0a58ca;
-  --purple-color: #5a32a3;
-  --purple-hover: #482585;
   --success-color: #28a745;
   --danger-color: #dc3545;
   --light-color: #f8f9fa;
@@ -276,6 +267,7 @@ const handleLogin = async () => {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -407,8 +399,8 @@ const handleLogin = async () => {
 
 .form-input:focus {
   outline: none;
-  border-color: var(--purple-color);
-  box-shadow: 0 0 0 0.2rem rgba(90, 50, 163, 0.25);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
 .form-input.invalid {
@@ -430,7 +422,7 @@ const handleLogin = async () => {
 }
 
 .password-toggle:hover {
-  color: var(--purple-color);
+  color: var(--primary-color);
 }
 
 .error-message {
@@ -444,7 +436,7 @@ const handleLogin = async () => {
 .btn-submit {
   width: 100%;
   padding: 1rem;
-  background: #5a32a3; /* Màu tím */
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -456,12 +448,11 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-top: 2rem;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #482585;
+  background: var(--primary-hover);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -469,10 +460,6 @@ const handleLogin = async () => {
 .btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.fw-bold {
-  font-weight: bold;
 }
 
 .spinning {
@@ -489,13 +476,13 @@ const handleLogin = async () => {
 .divider {
   position: relative;
   text-align: center;
-  margin: 1.5rem 0;
+  margin: 2rem 0;
   font-size: 0.875rem;
   color: var(--text-muted);
 }
 
 .divider::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 0;
@@ -513,24 +500,22 @@ const handleLogin = async () => {
 /* Footer Links */
 .auth-footer {
   text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.95rem;
 }
 
-.text-muted {
-  color: #6c757d;
+.auth-footer p {
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
 }
 
-.register-link {
-  color: #5a32a3;
-  font-weight: 600;
+.link-secondary {
+  color: var(--primary-color);
   text-decoration: none;
-  margin-left: 5px;
-  transition: color 0.2s;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
-.register-link:hover {
-  color: #38206b;
+.link-secondary:hover {
+  color: var(--primary-hover);
   text-decoration: underline;
 }
 
@@ -539,12 +524,15 @@ const handleLogin = async () => {
   .auth-container {
     grid-template-columns: 1fr;
   }
+
   .auth-illustration {
     display: none;
   }
+
   .auth-form-container {
     padding: 2rem 1.5rem;
   }
+
   .form-title {
     font-size: 1.75rem;
   }
@@ -554,6 +542,7 @@ const handleLogin = async () => {
   .auth-page {
     padding: 1rem 0.5rem;
   }
+
   .auth-form-container {
     padding: 1.5rem 1rem;
   }

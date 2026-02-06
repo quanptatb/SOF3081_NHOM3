@@ -103,11 +103,6 @@
                 <p><strong>Số tài khoản:</strong> 0354006080</p>
                 <p><strong>Chủ tài khoản:</strong> Phạm Trần Anh Quân</p>
                 <p><strong>Nội dung:</strong> [Mã đơn hàng] - [Họ tên]</p>
-
-                <div class="qr-code-section">
-                  <img :src="generateQRUrl" alt="Mã QR thanh toán" class="qr-image" />
-                  <p class="qr-hint"><i class="bi bi-qr-code-scan"></i> Quét mã để thanh toán nhanh</p>
-                </div>
               </div>
             </div>
 
@@ -160,16 +155,16 @@
                 <span class="summary-value">{{ formatPrice(totalAmount) }}</span>
               </div>
 
-              <button type="submit" class="btn-submit btn-pay-now" :disabled="isSubmitting">
-  <span v-if="!isSubmitting">
-    <i class="bi bi-wallet2" aria-hidden="true"></i>
-    THANH TOÁN & MUA NGAY
-  </span>
-  <span v-else>
-    <i class="bi bi-arrow-repeat spinning" aria-hidden="true"></i>
-    Đang xử lý thanh toán...
-  </span>
-</button>
+              <button type="submit" class="btn-submit" :disabled="isSubmitting">
+                <span v-if="!isSubmitting">
+                  <i class="bi bi-check-circle" aria-hidden="true"></i>
+                  Xác nhận đặt hàng
+                </span>
+                <span v-else>
+                  <i class="bi bi-arrow-repeat spinning" aria-hidden="true"></i>
+                  Đang xử lý...
+                </span>
+              </button>
 
               <router-link to="/cart" class="btn-back">
                 <i class="bi bi-arrow-left" aria-hidden="true"></i>
@@ -408,21 +403,6 @@ const handleSubmit = async () => {
 onMounted(() => {
   loadCart()
 })
-
-// Thêm vào phần State (dòng 230)
-const tempOrderId = ref(Math.floor(1000 + Math.random() * 9000))
-
-// Thêm vào phần Computed Properties (khoảng dòng 245)
-const generateQRUrl = computed(() => {
-  const bankId = 'ICB'; // Mã Vietinbank
-  const accountNo = '0354006080';
-  const amount = totalAmount.value;
-  const description = encodeURIComponent(`DH${tempOrderId.value} ${formData.value.name}`);
-  
-  // Sử dụng API VietQR để tạo mã nhanh
-  return `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${description}&accountName=Pham%20Tran%20Anh%20Quan`;
-})
-
 </script>
 
 <style scoped>
@@ -860,55 +840,4 @@ const generateQRUrl = computed(() => {
     font-size: 1.125rem;
   }
 }
-
-.bank-info-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 180px; /* Chia thông tin bên trái, QR bên phải */
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background: #f0f7ff;
-  border: 1px dashed var(--primary-color);
-  border-radius: 12px;
-  align-items: center;
-}
-
-.bank-info h4 {
-  color: var(--primary-color);
-  margin-top: 0;
-}
-
-.qr-code-section {
-  text-align: center;
-  background: white;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: var(--shadow-sm);
-}
-
-.qr-image {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.qr-hint {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 8px;
-  font-weight: 600;
-}
-
-/* Responsive cho điện thoại */
-@media (max-width: 576px) {
-  .bank-info-wrapper {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  .qr-code-section {
-    width: 160px;
-    margin: 0 auto;
-  }
-}
-
-
 </style>
