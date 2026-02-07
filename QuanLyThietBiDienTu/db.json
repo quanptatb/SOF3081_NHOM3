@@ -293,6 +293,19 @@
         }
       ],
       "id": "3e18"
+    },
+    {
+      "userId": "babe",
+      "items": [
+        {
+          "productId": 2,
+          "name": "CPU Intel i7 13700K Gaming Pro",
+          "price": 6500000,
+          "image": "/src/assets/images/inteli7.png",
+          "quantity": 1
+        }
+      ],
+      "id": "7c54"
     }
   ],
   "orders": [

@@ -1,0 +1,1049 @@
+<template>
+  <div class="orders-page">
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">
+          <i class="bi bi-box-seam" aria-hidden="true"></i>
+          Đơn mua của tôi
+        </h1>
+        <p class="page-subtitle">Quản lý và theo dõi đơn hàng của bạn</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-refresh" @click="loadOrders" :disabled="isLoading">
+          <i class="bi bi-arrow-clockwise" :class="{ spinning: isLoading }" aria-hidden="true"></i>
+          Làm mới
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon stat-total">
+          <i class="bi bi-receipt-cutoff" aria-hidden="true"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ totalOrders }}</h3>
+          <p>Tổng đơn hàng</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-pending">
+          <i class="bi bi-clock-history" aria-hidden="true"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ pendingOrders }}</h3>
+          <p>Đơn chờ xử lý</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon stat-revenue">
+          <i class="bi bi-wallet2" aria-hidden="true"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ formatCurrency(totalSpent) }}</h3>
+          <p>Tổng chi tiêu</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-bar">
+      <div class="filter-group">
+        <label>Trạng thái:</label>
+        <select v-model="filterStatus" class="filter-select">
+          <option value="">Tất cả</option>
+          <option value="Pending">Chờ xử lý</option>
+          <option value="Confirmed">Đã xác nhận</option>
+          <option value="Shipping">Đang vận chuyển</option>
+          <option value="Delivered">Đã giao hàng</option>
+          <option value="Cancelled">Đã hủy</option>
+        </select>
+      </div>
+
+      <div class="filter-group flex-grow-1">
+        <label>Tìm kiếm:</label>
+        <div class="search-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input v-model="searchQuery" type="text" class="filter-search"
+            placeholder="Tìm theo mã đơn, tên sản phẩm..." />
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Đang tải đơn hàng...</p>
+    </div>
+
+    <div v-else-if="filteredOrders.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-inbox" aria-hidden="true"></i>
+      </div>
+      <h3>Chưa có đơn hàng nào</h3>
+      <p v-if="searchQuery || filterStatus">
+        Không tìm thấy đơn hàng phù hợp với bộ lọc
+      </p>
+      <p v-else>
+        Bạn chưa có đơn hàng nào. Hãy mua sắm ngay!
+      </p>
+      <router-link to="/" class="btn-shop-now">
+        <i class="bi bi-shop"></i>
+        Mua sắm ngay
+      </router-link>
+    </div>
+
+    <div v-else class="orders-table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Mã đơn</th>
+            <th>Ngày đặt</th>
+            <th>Sản phẩm</th>
+            <th>Tổng tiền</th>
+            <th>Phương thức</th>
+            <th>Trạng thái</th>
+            <th>Chi tiết</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="order in paginatedOrders" :key="order.id" class="order-row">
+            <td class="order-id">
+              <strong>#{{ order.id }}</strong>
+            </td>
+            <td>{{ formatDate(order.createdAt) }}</td>
+            <td>
+              <div class="product-summary">
+                <span class="product-count">{{ order.items.length }} sản phẩm</span>
+                <span class="product-preview">{{ getProductPreview(order.items) }}</span>
+              </div>
+            </td>
+            <td class="order-total">{{ formatCurrency(order.total) }}</td>
+            <td>
+              <span class="payment-badge" :class="`payment-${order.payment?.toLowerCase() || 'cod'}`">
+                {{ order.payment === 'COD' ? '💵 COD' : '🏦 Chuyển khoản' }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" :class="`status-${order.status.toLowerCase()}`">
+                {{ getStatusText(order.status) }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-action btn-view" @click="viewOrderDetails(order)" title="Xem chi tiết">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination" v-if="totalPages > 1">
+        <button class="page-btn" :disabled="currentPage === 1" @click="currentPage--">
+          <i class="bi bi-chevron-left me-1"></i> Trước
+        </button>
+        
+        <div class="page-info">
+          Trang <span class="fw-bold text-purple">{{ currentPage }}</span> / {{ totalPages }}
+        </div>
+        
+        <button class="page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
+          Sau <i class="bi bi-chevron-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+
+    <div v-if="selectedOrder" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>Chi tiết đơn hàng #{{ selectedOrder.id }}</h2>
+          <button class="btn-close" @click="closeModal">
+            <i class="bi bi-x" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="detail-section">
+            <h3>Thông tin đơn hàng</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Ngày đặt:</strong>
+                <span>{{ formatDate(selectedOrder.createdAt) }}</span>
+              </div>
+              <div class="detail-item">
+                <strong>Trạng thái:</strong>
+                <span class="status-badge" :class="`status-${selectedOrder.status.toLowerCase()}`">
+                  {{ getStatusText(selectedOrder.status) }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <strong>Phương thức thanh toán:</strong>
+                <span>{{ selectedOrder.payment === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Thông tin giao hàng</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Người nhận:</strong>
+                <span>{{ selectedOrder.customerName }}</span>
+              </div>
+              <div class="detail-item">
+                <strong>Số điện thoại:</strong>
+                <span>{{ selectedOrder.phone }}</span>
+              </div>
+              <div class="detail-item full-width">
+                <strong>Địa chỉ:</strong>
+                <span>{{ selectedOrder.address }}</span>
+              </div>
+              <div class="detail-item full-width" v-if="selectedOrder.note">
+                <strong>Ghi chú:</strong>
+                <span>{{ selectedOrder.note }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Sản phẩm đã đặt</h3>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th>Số lượng</th>
+                  <th>Đơn giá</th>
+                  <th>Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in selectedOrder.items" :key="item.id">
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ formatCurrency(item.price) }}</td>
+                  <td>{{ formatCurrency(item.price * item.quantity) }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3"><strong>Tổng cộng:</strong></td>
+                  <td><strong>{{ formatCurrency(selectedOrder.total) }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { toast } from '../composables/useToast'
+import axios from 'axios'
+
+/**
+ * API Configuration
+ */
+const ORDERS_API_URL = 'http://localhost:3000/orders'
+
+/**
+ * Types
+ */
+interface OrderItem {
+  id: number
+  name: string
+  price: number
+  quantity: number
+}
+
+interface Order {
+  id: number
+  userId?: number | string
+  customerName: string
+  phone: string
+  address: string
+  payment?: string
+  note?: string
+  total: number
+  createdAt: string
+  status: string
+  items: OrderItem[]
+}
+
+/**
+ * State
+ */
+const orders = ref<Order[]>([])
+const isLoading = ref(true)
+const selectedOrder = ref<Order | null>(null)
+const filterStatus = ref('')
+const searchQuery = ref('')
+const currentPage = ref(1)
+const pageSize = 10
+
+/**
+ * Computed
+ */
+const currentUser = computed(() => {
+  const userStr = localStorage.getItem('currentUser')
+  return userStr ? JSON.parse(userStr) : null
+})
+
+const filteredOrders = computed(() => {
+  const userId = currentUser.value?.id
+  if (!userId) return []
+
+  return orders.value.filter(order => {
+    // Filter by user ID
+    const matchUser = order.userId?.toString() === userId.toString()
+    
+    // Filter by status
+    const matchStatus = !filterStatus.value || order.status === filterStatus.value
+    
+    // Filter by search query
+    const matchSearch = !searchQuery.value ||
+      order.id.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      order.items.some(item => item.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+
+    return matchUser && matchStatus && matchSearch
+  })
+})
+
+const paginatedOrders = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredOrders.value.slice(start, start + pageSize)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredOrders.value.length / pageSize)
+})
+
+const totalOrders = computed(() => filteredOrders.value.length)
+
+const pendingOrders = computed(() => {
+  return filteredOrders.value.filter(o => o.status === 'Pending').length
+})
+
+const totalSpent = computed(() => {
+  return filteredOrders.value
+    .filter(o => o.status !== 'Cancelled')
+    .reduce((sum, o) => sum + o.total, 0)
+})
+
+/**
+ * Methods
+ */
+const formatCurrency = (val: number): string => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(val)
+}
+
+const formatDate = (dateStr: string): string => {
+  try {
+    return new Date(dateStr).toLocaleString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch {
+    return dateStr
+  }
+}
+
+const getStatusText = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    'Pending': '⏳ Chờ xử lý',
+    'Confirmed': '✅ Đã xác nhận',
+    'Shipping': '🚚 Đang vận chuyển',
+    'Delivered': '🎉 Đã giao hàng',
+    'Cancelled': '❌ Đã hủy'
+  }
+  return statusMap[status] || status
+}
+
+const getProductPreview = (items: OrderItem[]): string => {
+  if (items.length === 0) return ''
+  if (items.length === 1) return items[0].name
+  return `${items[0].name}, ...`
+}
+
+const loadOrders = async () => {
+  isLoading.value = true
+  try {
+    const response = await axios.get(ORDERS_API_URL)
+    orders.value = response.data
+    toast().info('Đã tải lại danh sách đơn hàng')
+  } catch (error) {
+    console.error('Error loading orders:', error)
+    toast().error('Không thể tải danh sách đơn hàng')
+  } finally {
+    setTimeout(() => {
+      isLoading.value = false
+    }, 500)
+  }
+}
+
+const viewOrderDetails = (order: Order) => {
+  selectedOrder.value = order
+}
+
+const closeModal = () => {
+  selectedOrder.value = null
+}
+
+/**
+ * Lifecycle
+ */
+onMounted(() => {
+  if (!currentUser.value) {
+    toast().error('Vui lòng đăng nhập để xem đơn hàng')
+    window.location.href = '/login'
+    return
+  }
+  loadOrders()
+})
+</script>
+
+<style scoped>
+/* CSS Custom Properties */
+:root {
+  --primary-color: #6f42c1;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --info-color: #17a2b8;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  --border-color: #dee2e6;
+  --text-muted: #6c757d;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --border-radius: 12px;
+}
+
+.orders-page {
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.page-title i {
+  color: var(--primary-color);
+}
+
+.page-subtitle {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Button Styles */
+.btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 6px rgba(111, 66, 193, 0.2);
+}
+
+.btn-refresh:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(111, 66, 193, 0.3);
+  background: linear-gradient(135deg, #7b4ecf 0%, #663bb0 100%);
+}
+
+.btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #a0a0a0;
+}
+
+.btn-shop-now {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-shop-now:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(111, 66, 193, 0.3);
+  color: white;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.75rem;
+}
+
+.stat-total {
+  background: rgba(111, 66, 193, 0.1);
+  color: var(--primary-color);
+}
+
+.stat-pending {
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--warning-color);
+}
+
+.stat-revenue {
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--success-color);
+}
+
+.stat-info h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.stat-info p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+/* Filters */
+.filters-bar {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.filter-select,
+.search-wrapper {
+  background-color: #f4f6f8;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  height: 48px;
+}
+
+.filter-select {
+  padding: 0 2rem 0 1rem;
+  font-size: 0.95rem;
+  color: #495057;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  width: 100%;
+  min-width: 350px;
+}
+
+.search-icon {
+  color: #a1a5b7;
+  font-size: 1.1rem;
+  margin-right: 0.8rem;
+}
+
+.filter-search {
+  border: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  font-size: 0.95rem;
+  color: #495057;
+  outline: none;
+}
+
+.filter-select:hover,
+.search-wrapper:hover {
+  background-color: #ebedf3;
+}
+
+.filter-select:focus,
+.filter-search:focus,
+.search-wrapper:focus-within {
+  background-color: #ffffff;
+  border-color: #6f42c1;
+  box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.1);
+  outline: none;
+}
+
+/* Loading & Empty States */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: white;
+  border-radius: var(--border-radius);
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.empty-icon {
+  font-size: 5rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  margin-bottom: 1rem;
+}
+
+/* Orders Table */
+.orders-table-container {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table thead {
+  background: var(--light-color);
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.orders-table th {
+  font-weight: 700;
+  color: var(--dark-color);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.order-row:hover {
+  background: rgba(13, 110, 253, 0.05);
+}
+
+.order-id strong {
+  color: var(--primary-color);
+}
+
+.product-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.product-count {
+  font-weight: 600;
+}
+
+.product-preview {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.order-total {
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+.payment-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.payment-cod {
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--warning-color);
+}
+
+.payment-bank {
+  background: rgba(23, 162, 184, 0.1);
+  color: var(--info-color);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status-pending {
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--warning-color);
+}
+
+.status-confirmed {
+  background: rgba(23, 162, 184, 0.1);
+  color: var(--info-color);
+}
+
+.status-shipping {
+  background: rgba(13, 110, 253, 0.1);
+  color: #0d6efd;
+}
+
+.status-delivered {
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--success-color);
+}
+
+.status-cancelled {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--danger-color);
+}
+
+.btn-action {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+.btn-view {
+  color: var(--info-color);
+}
+
+.btn-view:hover {
+  background: rgba(23, 162, 184, 0.1);
+  transform: scale(1.1);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.page-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--border-color);
+  background: white;
+  color: #333;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.text-purple {
+  color: var(--primary-color);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.btn-close:hover {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--danger-color);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.detail-section {
+  margin-bottom: 2rem;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.detail-section h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--dark-color);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.detail-item strong {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.detail-item span {
+  color: var(--dark-color);
+  font-size: 1rem;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.items-table th,
+.items-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.items-table th {
+  background: var(--light-color);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.items-table tfoot td {
+  background: rgba(111, 66, 193, 0.05);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .orders-page {
+    padding: 1rem;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+  }
+
+  .search-wrapper {
+    min-width: 100%;
+  }
+
+  .orders-table-container {
+    overflow-x: auto;
+  }
+
+  .orders-table {
+    min-width: 800px;
+  }
+
+  .modal-content {
+    width: 95%;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

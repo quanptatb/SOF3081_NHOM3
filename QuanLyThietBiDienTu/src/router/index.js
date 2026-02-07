@@ -12,6 +12,7 @@ import ProductDetailUser from "@/views/ProductDetailUser.vue";
 import Cart from "../views/Cart.vue";
 import Checkout from "../views/Checkout.vue";
 import Profile from "../views/Profile.vue";
+import UserOrders from "../views/UserOrders.vue";
 
 // --- Auth Views ---
 import Login from "@/views/auth/Login.vue";
@@ -75,6 +76,11 @@ const routes = [
     path: "/profile",
     component: Profile,
     meta: { requiresAuth: true } // Bắt buộc đăng nhập để xem profile
+  },
+  {
+    path: "/orders",
+    component: UserOrders,
+    meta: { requiresAuth: true } // Bắt buộc đăng nhập để xem đơn mua
   },
 ];
 

@@ -213,11 +213,11 @@
 
         <div class="row justify-content-center mt-3 bg-secondary bg-opacity-25 py-3 rounded">
           <div class="col-auto text-center">
-            <small class="d-block text-white-50 mb-1">Cửa hàng ủy quyền bởi Apple:</small>
+            <small class="d-block text-white-50 mb-1">Cửa hàng ủy quyền bởi PineApple:</small>
             <h5 class="fw-bold">F.Studio <span class="text-success">by NoName</span></h5>
           </div>
           <div class="col-auto text-center border-start border-secondary ps-4 ms-2">
-            <small class="d-block text-white-50 mb-1">Trung tâm bảo hành Apple:</small>
+            <small class="d-block text-white-50 mb-1">Trung tâm bảo hành PineApple:</small>
             <h5 class="fw-bold">F.Care <span class="text-success">by NoName</span></h5>
           </div>
         </div>
