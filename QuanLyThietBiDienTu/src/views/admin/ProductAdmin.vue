@@ -6,11 +6,7 @@
 
       <div class="row g-2 mb-3 align-items-center">
         <div class="col-md-6 col-12">
-          <input
-            v-model="keyword"
-            class="form-control"
-            placeholder="🔍 Tìm kiếm sản phẩm..."
-          />
+          <input v-model="keyword" class="form-control" placeholder="🔍 Tìm kiếm sản phẩm..." />
         </div>
         <div class="col-md-6 col-12 text-md-end">
           <button class="btn btn-orange" @click="openAdd">
@@ -28,13 +24,14 @@
               <th>Tên</th>
               <th>Danh mục</th>
               <th>Giá</th>
+              <th>Tồn kho</th>
               <th class="text-center" width="220">Hành động</th>
             </tr>
           </thead>
 
           <tbody>
             <tr v-if="isLoading">
-              <td colspan="6" class="text-center py-4">
+              <td colspan="7" class="text-center py-4">
                 <div class="spinner-border text-orange" role="status">
                   <span class="visually-hidden">Loading...</span>
                 </div>
@@ -44,19 +41,29 @@
 
             <tr v-else v-for="p in filteredProducts" :key="p.id">
               <td>{{ p.id }}</td>
-          <td>
-            <img
-              :src="getImageUrl(p.image)"
-              width="60"
-              class="rounded"
-              style="object-fit: cover; aspect-ratio: 1/1;"
-              @error="$event.target.src = 'https://via.placeholder.com/60?text=No+Img'"
-            />
-          </td>
+              <td>
+                <img :src="getImageUrl(p.image)" width="60" class="rounded"
+                  style="object-fit: cover; aspect-ratio: 1/1;"
+                  @error="$event.target.src = 'https://via.placeholder.com/60?text=No+Img'" />
+              </td>
               <td>{{ p.name }}</td>
               <td>{{ p.category }}</td>
               <td class="text-orange fw-bold">
                 {{ Number(p.price).toLocaleString() }} ₫
+              </td>
+              <td>
+                <span v-if="p.stock > 20" class="badge bg-success">
+                  <i class="bi bi-check-circle"></i> {{ p.stock }}
+                </span>
+                <span v-else-if="p.stock > 5" class="badge bg-warning text-dark">
+                  <i class="bi bi-exclamation-triangle"></i> {{ p.stock }}
+                </span>
+                <span v-else-if="p.stock > 0" class="badge bg-danger">
+                  <i class="bi bi-exclamation-circle"></i> {{ p.stock }}
+                </span>
+                <span v-else class="badge bg-secondary">
+                  <i class="bi bi-x-circle"></i> Hết hàng
+                </span>
               </td>
               <td class="text-center">
                 <button class="btn btn-sm btn-info me-1" @click="viewDetail(p.id)">
@@ -72,7 +79,7 @@
             </tr>
 
             <tr v-if="!isLoading && filteredProducts.length === 0">
-              <td colspan="6" class="text-center text-muted">
+              <td colspan="7" class="text-center text-muted">
                 Không tìm thấy sản phẩm nào
               </td>
             </tr>
@@ -113,14 +120,18 @@
                   <label class="form-label">Tên file ảnh</label>
                   <input v-model="form.image" class="form-control" placeholder="Ví dụ: inteli5.png" />
                 </div>
+                <div class="col-md-6">
+                  <label class="form-label">Số lượng tồn kho</label>
+                  <input v-model.number="form.stock" type="number" min="0" class="form-control"
+                    placeholder="Nhập số lượng..." />
+                  <small v-if="form.stock < 10 && form.stock >= 0" class="text-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Cảnh báo: Số lượng tồn kho thấp!
+                  </small>
+                </div>
                 <div class="col-12">
                   <label class="form-label">Mô tả chi tiết</label>
-                  <textarea
-                    v-model="form.description"
-                    class="form-control"
-                    rows="3"
-                    placeholder="Mô tả sản phẩm..."
-                  ></textarea>
+                  <textarea v-model="form.description" class="form-control" rows="3"
+                    placeholder="Mô tả sản phẩm..."></textarea>
                 </div>
               </div>
             </div>
@@ -162,7 +173,8 @@ const form = ref({
   category: '',
   price: null,
   image: '',
-  description: ''
+  description: '',
+  stock: 0
 })
 
 /* ===================== HELPER XỬ LÝ ẢNH ===================== */
@@ -192,7 +204,8 @@ const fetchProducts = async () => {
 
 const save = async () => {
   if (!form.value.name || !form.value.price) return alert('Vui lòng nhập đủ thông tin!');
-  
+  if (form.value.stock < 0) return alert('Số lượng tồn kho không thể âm!');
+
   isSaving.value = true;
   try {
     if (isEdit.value) {
@@ -231,7 +244,7 @@ const filteredProducts = computed(() =>
 
 const openAdd = () => {
   isEdit.value = false;
-  form.value = { id: null, name: '', category: '', price: null, image: '', description: '' };
+  form.value = { id: null, name: '', category: '', price: null, image: '', description: '', stock: 0 };
   showForm.value = true;
 }
 
@@ -248,10 +261,24 @@ onMounted(fetchProducts);
 </script>
 
 <style scoped>
-.text-orange { color: #ff7a00; }
-.bg-orange { background-color: #ff7a00; }
-.btn-orange { background-color: #ff7a00; color: #fff; }
-.btn-orange:hover { background-color: #e56d00; }
+.text-orange {
+  color: #ff7a00;
+}
 
-table { min-width: 900px; }
+.bg-orange {
+  background-color: #ff7a00;
+}
+
+.btn-orange {
+  background-color: #ff7a00;
+  color: #fff;
+}
+
+.btn-orange:hover {
+  background-color: #e56d00;
+}
+
+table {
+  min-width: 900px;
+}
 </style>

@@ -42,17 +42,9 @@
               <label for="fullname" class="form-label fw-bold">Họ và tên <span class="required">*</span></label>
               <div class="input-wrapper">
                 <span class="input-icon"><i class="bi bi-person"></i></span>
-                <input 
-                  id="fullname" 
-                  v-model="formData.name" 
-                  type="text" 
-                  class="form-control custom-input"
-                  :class="{ 'is-invalid': errors.name }" 
-                  placeholder="Nguyễn Văn A" 
-                  @blur="validateField('name')"
-                  @input="clearError('name')" 
-                  aria-required="true" 
-                />
+                <input id="fullname" v-model="formData.name" type="text" class="form-control custom-input"
+                  :class="{ 'is-invalid': errors.name }" placeholder="Nguyễn Văn A" @blur="validateField('name')"
+                  @input="clearError('name')" aria-required="true" />
               </div>
               <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
             </div>
@@ -61,17 +53,9 @@
               <label for="phone" class="form-label fw-bold">Số điện thoại <span class="required">*</span></label>
               <div class="input-wrapper">
                 <span class="input-icon"><i class="bi bi-telephone"></i></span>
-                <input 
-                  id="phone" 
-                  v-model="formData.phone" 
-                  type="tel" 
-                  class="form-control custom-input"
-                  :class="{ 'is-invalid': errors.phone }" 
-                  placeholder="0912345678" 
-                  @blur="validateField('phone')"
-                  @input="clearError('phone')" 
-                  aria-required="true" 
-                />
+                <input id="phone" v-model="formData.phone" type="tel" class="form-control custom-input"
+                  :class="{ 'is-invalid': errors.phone }" placeholder="0912345678" @blur="validateField('phone')"
+                  @input="clearError('phone')" aria-required="true" />
               </div>
               <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
             </div>
@@ -80,17 +64,10 @@
               <label for="address" class="form-label fw-bold">Địa chỉ giao hàng <span class="required">*</span></label>
               <div class="input-wrapper">
                 <span class="input-icon top-icon"><i class="bi bi-geo-alt"></i></span>
-                <textarea 
-                  id="address" 
-                  v-model="formData.address" 
-                  class="form-control custom-input"
-                  :class="{ 'is-invalid': errors.address }" 
-                  rows="3"
-                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" 
-                  @blur="validateField('address')"
-                  @input="clearError('address')" 
-                  aria-required="true"
-                ></textarea>
+                <textarea id="address" v-model="formData.address" class="form-control custom-input"
+                  :class="{ 'is-invalid': errors.address }" rows="3"
+                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                  @blur="validateField('address')" @input="clearError('address')" aria-required="true"></textarea>
               </div>
               <span v-if="errors.address" class="error-message">{{ errors.address }}</span>
             </div>
@@ -106,7 +83,7 @@
                     <span>Thanh toán khi nhận hàng (COD)</span>
                   </div>
                 </label>
-                
+
                 <label class="payment-option" :class="{ active: formData.payment === 'BANK' }">
                   <input type="radio" v-model="formData.payment" value="BANK" name="payment" hidden />
                   <div class="option-content">
@@ -135,13 +112,8 @@
               <label for="note" class="form-label fw-bold">Ghi chú (tùy chọn)</label>
               <div class="input-wrapper">
                 <span class="input-icon top-icon"><i class="bi bi-pencil"></i></span>
-                <textarea 
-                  id="note" 
-                  v-model="formData.note" 
-                  class="form-control custom-input" 
-                  rows="2"
-                  placeholder="Ghi chú thêm cho đơn hàng..."
-                ></textarea>
+                <textarea id="note" v-model="formData.note" class="form-control custom-input" rows="2"
+                  placeholder="Ghi chú thêm cho đơn hàng..."></textarea>
               </div>
             </div>
           </div>
@@ -161,10 +133,10 @@
                   <div class="item-info flex-grow-1">
                     <h4 class="item-name text-truncate" style="max-width: 180px;">{{ item.name }}</h4>
                     <p class="item-price text-purple mb-0">
-                      {{ formatPrice(item.price) }} 
+                      {{ formatPrice(item.price) }}
                       <span class="text-muted small ms-1">x{{ item.quantity }}</span>
                     </p>
-                    </div>
+                  </div>
                   <div class="item-total fw-bold">
                     {{ formatPrice(item.price * item.quantity) }}
                   </div>
@@ -221,6 +193,7 @@ import axios from 'axios'
  */
 const CART_API_URL = 'http://localhost:3000/carts'
 const ORDERS_API_URL = 'http://localhost:3000/orders'
+const PRODUCTS_API_URL = 'http://localhost:3000/products'
 
 /**
  * Types
@@ -395,6 +368,45 @@ const clearError = (field: keyof FormErrors) => {
 }
 
 /**
+ * Validate stock availability for all cart items
+ */
+const validateStock = async (): Promise<{ valid: boolean; errors: string[] }> => {
+  const stockErrors: string[] = []
+
+  try {
+    // Check each item in cart
+    for (const item of cartItems.value) {
+      const response = await axios.get(`${PRODUCTS_API_URL}/${item.id}`)
+      const product = response.data
+
+      // Check if product exists
+      if (!product) {
+        stockErrors.push(`Sản phẩm "${item.name}" không tồn tại`)
+        continue
+      }
+
+      // Check stock availability
+      if (product.stock === 0) {
+        stockErrors.push(`"${item.name}" đã hết hàng`)
+      } else if (product.stock < item.quantity) {
+        stockErrors.push(`"${item.name}" chỉ còn ${product.stock} sản phẩm (bạn đặt ${item.quantity})`)
+      }
+    }
+
+    return {
+      valid: stockErrors.length === 0,
+      errors: stockErrors
+    }
+  } catch (error) {
+    console.error('Stock validation error:', error)
+    return {
+      valid: false,
+      errors: ['Không thể kiểm tra tồn kho. Vui lòng thử lại!']
+    }
+  }
+}
+
+/**
  * Handle form submission (API Version)
  */
 const handleSubmit = async () => {
@@ -409,6 +421,14 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
+    // Validate stock before processing order
+    const stockCheck = await validateStock()
+    if (!stockCheck.valid) {
+      alert('⚠️ Không thể đặt hàng:\n\n' + stockCheck.errors.join('\n'))
+      isSubmitting.value = false
+      return
+    }
+
     // Get current user
     const currentUserStr = localStorage.getItem('currentUser')
     if (!currentUserStr) {
@@ -437,6 +457,26 @@ const handleSubmit = async () => {
     // Save order to API
     const orderResponse = await axios.post(ORDERS_API_URL, newOrder)
     const orderId = orderResponse.data.id
+
+    // Deduct stock for each item in the order
+    for (const item of cartItems.value) {
+      try {
+        // Get current product
+        const productResponse = await axios.get(`${PRODUCTS_API_URL}/${item.id}`)
+        const product = productResponse.data
+
+        // Calculate new stock
+        const newStock = product.stock - item.quantity
+
+        // Update product stock (ensure it doesn't go negative)
+        await axios.patch(`${PRODUCTS_API_URL}/${item.id}`, {
+          stock: Math.max(0, newStock)
+        })
+      } catch (error) {
+        console.error(`Failed to update stock for product ${item.id}:`, error)
+        // Continue with other items even if one fails
+      }
+    }
 
     // Clear cart from API
     const cartResponse = await axios.get(`${CART_API_URL}?userId=${userId}`)
@@ -491,16 +531,23 @@ onMounted(() => {
   --primary-hover: #5a32a3;
   --success-color: #28a745;
   --danger-color: #dc3545;
-  --light-bg: #f5f7fa; /* Màu nền trang */
-  --input-bg: #f8f9fa; /* Màu nền input */
+  --light-bg: #f5f7fa;
+  /* Màu nền trang */
+  --input-bg: #f8f9fa;
+  /* Màu nền input */
   --border-color: #e1e5eb;
   --text-dark: #343a40;
   --border-radius: 12px;
 }
 
 /* Helpers */
-.text-purple { color: #6f42c1 !important; }
-.bg-purple { background-color: #6f42c1 !important; }
+.text-purple {
+  color: #6f42c1 !important;
+}
+
+.bg-purple {
+  background-color: #6f42c1 !important;
+}
 
 /* Page Layout */
 .checkout-page {
@@ -548,15 +595,18 @@ onMounted(() => {
 }
 
 .input-icon.top-icon {
-  top: 20px; /* Cho textarea */
+  top: 20px;
+  /* Cho textarea */
 }
 
 /* Style cho Input/Textarea */
 .custom-input {
-  background-color: #f8f9fa; /* Nền xám nhạt */
+  background-color: #f8f9fa;
+  /* Nền xám nhạt */
   border: 1px solid #e1e5eb;
   border-radius: 10px;
-  padding: 12px 15px 12px 45px; /* Padding trái né icon */
+  padding: 12px 15px 12px 45px;
+  /* Padding trái né icon */
   font-size: 0.95rem;
   color: #495057;
   transition: all 0.3s ease;
@@ -573,7 +623,7 @@ onMounted(() => {
 }
 
 /* Đổi màu icon khi focus */
-.custom-input:focus + .input-icon,
+.custom-input:focus+.input-icon,
 .input-wrapper:focus-within .input-icon {
   color: #6f42c1;
 }
@@ -583,6 +633,7 @@ onMounted(() => {
   border-color: #dc3545 !important;
   background-color: #fff8f8;
 }
+
 .error-message {
   color: #dc3545;
   font-size: 0.85rem;
@@ -590,7 +641,9 @@ onMounted(() => {
   display: block;
 }
 
-.required { color: #dc3545; }
+.required {
+  color: #dc3545;
+}
 
 /* Form Layout */
 .form-grid {
@@ -599,7 +652,8 @@ onMounted(() => {
   gap: 30px;
 }
 
-.form-section, .summary-section {
+.form-section,
+.summary-section {
   background: white;
   padding: 30px;
   border-radius: 16px;
@@ -780,12 +834,14 @@ onMounted(() => {
 }
 
 /* Empty & Loading */
-.loading-state, .empty-checkout {
+.loading-state,
+.empty-checkout {
   text-align: center;
   padding: 50px 20px;
   background: white;
   border-radius: 16px;
 }
+
 .spinner {
   width: 40px;
   height: 40px;
@@ -795,11 +851,22 @@ onMounted(() => {
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Scrollbar nhỏ cho list items */
-.custom-scrollbar::-webkit-scrollbar { width: 5px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 10px;
+}
 
 /* Responsive */
 @media (max-width: 992px) {

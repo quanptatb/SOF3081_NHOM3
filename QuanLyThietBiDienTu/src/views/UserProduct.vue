@@ -47,8 +47,24 @@
           <router-link :to="`/productuser/${p.id}`" class="product-link text-decoration-none h-100 d-block">
             <div class="card product-card-tgdd h-100 p-2">
 
-              <div class="product-img-wrap mb-2">
+              <div class="product-img-wrap mb-2 position-relative">
                 <img :src="p.image" class="img-fluid" loading="lazy" />
+
+                <!-- Out of stock overlay -->
+                <div v-if="p.stock === 0" class="position-absolute top-0 start-0 w-100 h-100 
+                            bg-dark bg-opacity-50 d-flex align-items-center justify-content-center
+                            out-of-stock-overlay">
+                  <span class="badge bg-danger fs-6 fw-bold px-3 py-2">
+                    <i class="bi bi-x-circle-fill me-1"></i> HẾT HÀNG
+                  </span>
+                </div>
+
+                <!-- Low stock badge -->
+                <span v-else-if="p.stock <= 10 && p.stock > 0"
+                  class="position-absolute top-0 end-0 m-2 badge stock-badge"
+                  :class="p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark'">
+                  <i class="bi bi-exclamation-triangle-fill"></i> Còn {{ p.stock }}
+                </span>
               </div>
 
               <div class="card-body p-1 d-flex flex-column">
@@ -624,5 +640,35 @@ const paginatedProducts = computed(() => {
     bottom: 15px;
     padding: 8px 16px;
   }
+}
+
+/* ===== STOCK BADGES ===== */
+.stock-badge {
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.out-of-stock-overlay {
+  border-radius: 14px;
+  z-index: 5;
+}
+
+.product-card-tgdd:has(.out-of-stock-overlay) {
+  opacity: 0.75;
+  filter: grayscale(0.3);
 }
 </style>
